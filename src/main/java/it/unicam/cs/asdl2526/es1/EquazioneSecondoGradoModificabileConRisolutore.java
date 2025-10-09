@@ -51,7 +51,13 @@ public class EquazioneSecondoGradoModificabileConRisolutore {
      */
     public EquazioneSecondoGradoModificabileConRisolutore(double a, double b,
             double c) {
-        // TODO implementare
+        if(Math.abs(a) < EPSILON)
+            throw new IllegalArgumentException("Il parametro a NON può essere NULLO!");
+        this.a = a;
+        this.b = b;
+        this.c = c;
+        this.solved = false;
+        this.lastSolution = null;
     }
 
     /**
@@ -71,7 +77,10 @@ public class EquazioneSecondoGradoModificabileConRisolutore {
      *                                      se il nuovo valore è zero
      */
     public void setA(double a) {
-        // TODO implementare
+        if(Math.abs(a) < EPSILON)
+            throw new IllegalArgumentException("Parametro non valido!");
+        this.a = a;
+        this.solved = false;
     }
 
     /**
@@ -89,7 +98,8 @@ public class EquazioneSecondoGradoModificabileConRisolutore {
      *              il nuovo valore del parametro b
      */
     public void setB(double b) {
-        // TODO implementare
+        this.b = b;
+        this.solved = false;
     }
 
     /**
@@ -107,7 +117,8 @@ public class EquazioneSecondoGradoModificabileConRisolutore {
      *              il nuovo valore del parametro c
      */
     public void setC(double c) {
-        // TODO implementare
+        this.c = c;
+        this.solved = false;
     }
 
     /**
@@ -125,7 +136,17 @@ public class EquazioneSecondoGradoModificabileConRisolutore {
      * risolta di nuovo.
      */
     public void solve() {
-        // TODO implementare
+        double delta = this.b * this.b - (4 * this.a * this.c);
+        if(delta < 0)
+            lastSolution = new SoluzioneEquazioneSecondoGrado(new EquazioneSecondoGrado(this. a, this.b, this.c));
+        if(Math.abs(delta) < EPSILON) // delta == 0
+            lastSolution = new SoluzioneEquazioneSecondoGrado(new EquazioneSecondoGrado(this.a, this.b, this.c),
+                                                                                    - this.b / (2 * this.a));
+        if(delta > 0)
+            lastSolution = new SoluzioneEquazioneSecondoGrado(new EquazioneSecondoGrado(this.a, this.b, this.c),
+                    (- this.b + Math.sqrt(delta)) / (2 * this.a), (- this.b - Math.sqrt(delta)) / (2 * this.a));
+        this.solved = true;
+
     }
 
     /**
@@ -140,8 +161,10 @@ public class EquazioneSecondoGradoModificabileConRisolutore {
      *                                   almeno uno dei parametri
      */
     public SoluzioneEquazioneSecondoGrado getSolution() {
-        // TODO implementare
-        return null;
+        if(this.solved)
+            return lastSolution;
+        else
+            throw new IllegalStateException("Equazione NON risolta!");
     }
 
 }

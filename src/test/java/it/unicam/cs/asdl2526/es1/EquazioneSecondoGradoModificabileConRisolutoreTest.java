@@ -51,38 +51,86 @@ class EquazioneSecondoGradoModificabileConRisolutoreTest {
 
     @Test
     final void testSetA() {
-        // TODO implementare
-        fail("Test non implementato");
+        double x = 4.5;
+        double y = 0.0000000000000001;
+        EquazioneSecondoGradoModificabileConRisolutore e = new EquazioneSecondoGradoModificabileConRisolutore(5, 3,1);
+        e.setA(x);
+        assertTrue(x == e.getA());
+        // Avendo modificato un parametro l'equazione non dovrebbe essere risolta, quindi
+        // isSolved() dovrebbe restituire false e getSolution() lanciare un'eccezione
+        assertFalse(e.isSolved());
+        assertThrows(IllegalStateException.class,
+                () -> e.getSolution());
+        // Dopo esser stata risolta nuovamente, allora isSolved() deve restituire true
+        e.solve();
+        assertTrue(e.isSolved());
+        // Lancia un'eccezione se a è 0
+        assertThrows(IllegalArgumentException.class,
+                () -> e.setA(y));
     }
 
     @Test
     final void testGetB() {
-        // TODO implementare
-        fail("Test non implementato");
+        double x = 8.3;
+        EquazioneSecondoGradoModificabileConRisolutore e = new EquazioneSecondoGradoModificabileConRisolutore(5, x, 6);
+        assertTrue(x == e.getB());
     }
 
     @Test
     final void testSetB() {
-        // TODO implementare
-        fail("Test non implementato");
+       double x = 6.7;
+       EquazioneSecondoGradoModificabileConRisolutore e = new EquazioneSecondoGradoModificabileConRisolutore(1, 2, 4);
+       e.setB(x);
+       assertTrue(x == e.getB());
+        // Avendo modificato un parametro l'equazione non dovrebbe essere risolta, quindi
+        // isSolved() dovrebbe restituire false e getSolution() lanciare un'eccezione
+        assertFalse(e.isSolved());
+        assertThrows(IllegalStateException.class,
+                () -> e.getSolution());
+        // Dopo esser stata risolta nuovamente, allora isSolved() deve restituire true
+        e.solve();
+        assertTrue(e.isSolved());
     }
 
     @Test
     final void testGetC() {
-        // TODO implementare
-        fail("Test non implementato");
+        double x = 2;
+        EquazioneSecondoGradoModificabileConRisolutore e = new EquazioneSecondoGradoModificabileConRisolutore(1,6, x);
+        assertTrue(x == e.getC());
     }
 
     @Test
     final void testSetC() {
-        // TODO implementare
-        fail("Test non implementato");
+        double x = 1;
+        EquazioneSecondoGradoModificabileConRisolutore e = new EquazioneSecondoGradoModificabileConRisolutore(2,9,7);
+        e.setC(x);
+        assertTrue(x == e.getC());
+        // Avendo modificato un parametro l'equazione non dovrebbe essere risolta, quindi
+        // isSolved() dovrebbe restituire false e getSolution() lanciare un'eccezione
+        assertFalse(e.isSolved());
+        assertThrows(IllegalStateException.class,
+                () -> e.getSolution());
+        // Dopo esser stata risolta nuovamente, allora isSolved() deve restituire true
+        e.solve();
+        assertTrue(e.isSolved());
     }
 
     @Test
     final void testIsSolved() {
-        // TODO implementare
-        fail("Test non implementato");
+        double x = 9;
+        EquazioneSecondoGradoModificabileConRisolutore e = new EquazioneSecondoGradoModificabileConRisolutore(3,5,6);
+        // Solo dopo aver eseguito solve() il metodo isSolved() deve restituire
+        // true, altrimenti restituisce false
+        assertFalse(e.isSolved());
+        e.solve();
+        assertTrue(e.isSolved());
+        // Anche quando cambiamo un parametro, affinché isSolved restituisca true
+        // dobbiamo prima rieseguire solve(), altrimenti restituisce false
+        e.setA(x);
+        assertFalse(e.isSolved());
+        e.solve();
+        assertTrue(e.isSolved());
+
     }
 
     @Test
@@ -97,8 +145,29 @@ class EquazioneSecondoGradoModificabileConRisolutoreTest {
 
     @Test
     final void testGetSolution() {
-        // TODO implementare
-        fail("Test non implementato");
+        EquazioneSecondoGradoModificabileConRisolutore e = new EquazioneSecondoGradoModificabileConRisolutore(1,2,9);
+        // CASO 1 : DELTA < 0
+        assertThrows(IllegalStateException.class,
+                () -> e.getSolution());
+        e.solve();
+        assertEquals(e.getSolution(), new SoluzioneEquazioneSecondoGrado(new EquazioneSecondoGrado(e.getA(), e.getB(), e.getC())));
+
+        // CASO 2 : DELTA = 0
+        e.setC(1);
+        assertThrows(IllegalStateException.class,
+                () -> e.getSolution());
+        e.solve();
+        assertEquals(e.getSolution(), new SoluzioneEquazioneSecondoGrado(new EquazioneSecondoGrado(e.getA(), e.getB(), e.getC()),
+                                                                                                - e.getB() / (2 * e.getA())));
+        // CASO 3 : DELTA > 0
+        e.setB(5);
+        assertThrows(IllegalStateException.class,
+                () -> e.getSolution());
+        e.solve();
+        double delta = e.getB() * e.getB() - (4 * e.getA() * e.getC());
+        assertEquals(e.getSolution(), new SoluzioneEquazioneSecondoGrado(new EquazioneSecondoGrado(e.getA(), e.getB(), e.getC()),
+                (- e.getB() + Math.sqrt(delta)) / (2 * e.getA()), (- e.getB() - Math.sqrt(delta)) / (2 * e.getA())));
+
     }
 
 }

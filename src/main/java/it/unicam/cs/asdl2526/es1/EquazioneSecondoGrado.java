@@ -113,7 +113,7 @@ public class EquazioneSecondoGrado
     }
 
     /*
-     * L'ordinamento naturale naturale tra equazioni di secondo grado segue
+     * L'ordinamento naturale tra equazioni di secondo grado segue
      * l'ordinamento dei numeri double. Per prima cosa vengono confrontati i
      * parametri a delle due equazioni. Se sono diversi allora l'equazione con
      * il parametro a più grande è l'equazione più grande nell'ordinamento

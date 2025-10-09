@@ -38,7 +38,8 @@ public class EquazioniModificabiliTextualFrontEnd {
             // leggo il parametro a
             boolean retry = false;
             do {
-
+                retry = false; /* impostiamo all'inizio del ciclo il valore del flag RETRY a false, poiché
+                altrimenti resta sempre true e quindi il ciclo va in loop visto che la condizione è sempre vera */
                 System.out.println(
                         "Inserisci il valore del parametro a e premi INVIO");
                 try {
@@ -61,6 +62,8 @@ public class EquazioniModificabiliTextualFrontEnd {
             } while (retry);
             // leggo il parametro b
             do {
+                retry = false; /* impostiamo all'inizio del ciclo il valore del flag RETRY a false, poiché
+                altrimenti resta sempre true e quindi il ciclo va in loop visto che la condizione è sempre vera */
                 System.out.println(
                         "Inserisci il valore del parametro b e premi INVIO");
                 try {
@@ -77,6 +80,8 @@ public class EquazioniModificabiliTextualFrontEnd {
             } while (retry);
             // leggo il parametro c
             do {
+                retry = false; /* impostiamo all'inizio del ciclo il valore del flag RETRY a false, poiché
+                altrimenti resta sempre true e quindi il ciclo va in loop visto che la condizione è sempre vera */
                 System.out.println(
                         "Inserisci il valore del parametro c e premi INVIO");
                 try {
