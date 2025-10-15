@@ -136,6 +136,8 @@ public class EquazioneSecondoGradoModificabileConRisolutore {
      * risolta di nuovo.
      */
     public void solve() {
+        if(isSolved()) // se l'equazione è già risolta il metodo non la risolve di nuovo
+            return;
         double delta = this.b * this.b - (4 * this.a * this.c);
         if(delta < 0)
             lastSolution = new SoluzioneEquazioneSecondoGrado(new EquazioneSecondoGrado(this. a, this.b, this.c));
