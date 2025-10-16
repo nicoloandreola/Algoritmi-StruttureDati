@@ -10,7 +10,10 @@ package it.unicam.cs.asdl2526.es2;
  */
 public class CombinationLock {
 
-    // TODO inserire le variabili istanza che servono
+    private boolean open;
+    private String secret;
+    private StringBuilder aCombination;
+
 
     /**
      * Costruisce una cassaforte <b>aperta</b> con una data combinazione
@@ -23,7 +26,10 @@ public class CombinationLock {
      * @throws NullPointerException se la combinazione fornita è nulla
      */
     public CombinationLock(String aCombination) {
-        // TODO implementare
+        checkCombination(aCombination);
+        this.secret = aCombination;
+        this.open = true;
+        this.aCombination = new StringBuilder();
     }
 
     /**
@@ -38,7 +44,11 @@ public class CombinationLock {
      *                                      inglese
      */
     public void setPosition(char aPosition) {
-        // TODO implementare
+        if(aPosition < 'A' || aPosition > 'Z')
+            throw new IllegalArgumentException("Il carattere deve essere una LETTERA MAIUSCOLA!");
+        aCombination.append(aPosition);
+        if(aCombination.length() > 3)
+            aCombination.deleteCharAt(aCombination.length() - 4);
     }
 
     /**
@@ -48,7 +58,10 @@ public class CombinationLock {
      * prossimi tentativi di apertura.
      */
     public void open() {
-        // TODO implementare
+        String combinationString = this.aCombination.toString();
+        this.aCombination = new StringBuilder();
+        if (combinationString.equals(this.secret))
+            this.open = true;
     }
 
     /**
@@ -56,9 +69,9 @@ public class CombinationLock {
      * 
      * @return true se la cassaforte è attualmente aperta, false altrimenti
      */
+
     public boolean isOpen() {
-        // TODO implementare
-        return false;
+        return this.open;
     }
 
     /**
@@ -69,7 +82,8 @@ public class CombinationLock {
      * sono proprio la combinazione attuale.
      */
     public void lock() {
-        // TODO implementare
+        this.aCombination = new StringBuilder();
+        this.open = false;
     }
 
     /**
@@ -87,6 +101,18 @@ public class CombinationLock {
      * @throws NullPointerException se la combinazione fornita è nulla
      */
     public void lockAndChangeCombination(String aCombination) {
-        // TODO implementare
+        checkCombination(aCombination);
+        this.secret = aCombination;
+        this.open = false;
+    }
+
+    private void checkCombination(String aCombination) {
+        if (aCombination == null)
+            throw new NullPointerException("Combinazione NON inserita!");
+        if (aCombination.length() != 3)
+            throw new IllegalArgumentException("La combinazione deve essere di TRE lettere!");
+        for (int i = 0; i < 3; i++)
+            if (aCombination.charAt(i) < 'A' || aCombination.charAt(i) > 'Z')
+                throw new IllegalArgumentException("La combinazione deve contenere solo LETTERE MAIUSCOLE!");
     }
 }
