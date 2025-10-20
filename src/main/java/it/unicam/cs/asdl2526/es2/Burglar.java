@@ -9,7 +9,7 @@ package it.unicam.cs.asdl2526.es2;
  */
 public class Burglar {
 
-    private CombinationLock cassaforte;
+    private final CombinationLock cassaforte;
     private int attempts;
 
     /**
@@ -22,7 +22,9 @@ public class Burglar {
         if(aCombinationLock == null)
             throw new NullPointerException("La cassaforte NON può essere NULLA!");
         this.cassaforte = aCombinationLock;
-        this.attempts = 0;
+        this.attempts = -1;
+        // Inizializzo i tentativi a -1 in modo da semplificare
+        // poi il metodo getAttempts() (basta un solo return)
     }
 
     /**
@@ -32,8 +34,9 @@ public class Burglar {
      */
     public String findCombination() {
         this.cassaforte.lock();
-        for (char c1 = 'A'; c1 <= 'Z'; c1++) {
-            for (char c2 = 'A'; c2 <= 'Z'; c2++) {
+        this.attempts = 0;
+        for (char c1 = 'A'; c1 <= 'Z'; c1++)
+            for (char c2 = 'A'; c2 <= 'Z'; c2++)
                 for (char c3 = 'A'; c3 <= 'Z'; c3++) {
                     attempts++;
                     this.cassaforte.setPosition(c1);
@@ -41,11 +44,13 @@ public class Burglar {
                     this.cassaforte.setPosition(c3);
                     this.cassaforte.open();
                     if (this.cassaforte.isOpen()) {
-                        return "" + c1 + c2 + c3;
+                        StringBuilder s = new StringBuilder();
+                        s.append(c1);
+                        s.append(c2);
+                        s.append(c3);
+                        return s.toString();
                     }
                 }
-            }
-        }
         return null;
     }
 
@@ -58,8 +63,6 @@ public class Burglar {
      *         forzata.
      */
     public long getAttempts() {
-        if(this.attempts == 0)
-            return -1;
         return this.attempts;
     }
 }

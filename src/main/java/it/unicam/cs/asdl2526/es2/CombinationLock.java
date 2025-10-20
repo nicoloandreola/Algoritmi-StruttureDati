@@ -33,7 +33,7 @@ public class CombinationLock {
     }
 
     /**
-     * Imposta la manopola su una certaposizione.
+     * Imposta la manopola su una certa posizione.
      * 
      * @param aPosition
      *                      un carattere lettera maiuscola su cui viene
@@ -46,9 +46,8 @@ public class CombinationLock {
     public void setPosition(char aPosition) {
         if(aPosition < 'A' || aPosition > 'Z')
             throw new IllegalArgumentException("Il carattere deve essere una LETTERA MAIUSCOLA!");
-        aCombination.append(aPosition);
-        if(aCombination.length() > 3)
-            aCombination.deleteCharAt(aCombination.length() - 4);
+        if(this.aCombination.length() < 4)
+            this.aCombination.append(aPosition);
     }
 
     /**
@@ -58,10 +57,11 @@ public class CombinationLock {
      * prossimi tentativi di apertura.
      */
     public void open() {
-        String combinationString = this.aCombination.toString();
-        this.aCombination = new StringBuilder();
-        if (combinationString.equals(this.secret))
+        // Converto la conversazione in String per poter controllare se è uguale a quella segreta
+        String combination = this.aCombination.toString();
+        if (combination.equals(this.secret))
             this.open = true;
+        this.aCombination = new StringBuilder(); // Resetto la combinazione
     }
 
     /**
@@ -82,14 +82,14 @@ public class CombinationLock {
      * sono proprio la combinazione attuale.
      */
     public void lock() {
-        this.aCombination = new StringBuilder();
         this.open = false;
+        this.aCombination = new StringBuilder();
     }
 
     /**
      * Chiude la cassaforte e modifica la combinazione. Funziona solo se la
      * cassaforte è attualmente aperta. Se la cassaforte è attualmente chiusa
-     * rimane chiusa e la combinazione non viene cambiata, ma in questo caso le
+     * rimane chiusa e la combinazione non viene cambiata, ma in questo caso
      * le lettere impostate precedentemente non devono essere considerate per i
      * prossimi tentativi di apertura.
      * 
@@ -101,11 +101,18 @@ public class CombinationLock {
      * @throws NullPointerException se la combinazione fornita è nulla
      */
     public void lockAndChangeCombination(String aCombination) {
-        checkCombination(aCombination);
-        this.secret = aCombination;
-        this.open = false;
+        if(isOpen()) {
+            checkCombination(aCombination);
+            this.secret = aCombination;
+            this.open = false;
+        }
+        else
+            // le lettere impostate precedentemente non devono essere considerate
+            this.aCombination = new StringBuilder();
     }
 
+    // Metodo che controlla se una certa combinazione passata come parametro
+    // rispetti le API del costruttore e del metodo lockAndChangeCombination
     private void checkCombination(String aCombination) {
         if (aCombination == null)
             throw new NullPointerException("Combinazione NON inserita!");
