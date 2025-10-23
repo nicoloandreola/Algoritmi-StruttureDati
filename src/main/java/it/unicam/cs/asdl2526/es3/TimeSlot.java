@@ -3,8 +3,6 @@
  */
 package it.unicam.cs.asdl2526.es3;
 
-import java.util.Calendar;
-
 import java.util.GregorianCalendar;
 
 // La classe GregorianCalendar definisce una linea del tempo DISCRETA (ovviamente
@@ -247,15 +245,16 @@ public class TimeSlot implements Comparable<TimeSlot> {
      */
     @Override
     public String toString() {
-        return "[" + start.get(Calendar.DAY_OF_MONTH) + "/"
-                + (start.get(Calendar.MONTH) + 1) + "/"
-                + start.get(Calendar.YEAR) + " "
-                + start.get(Calendar.HOUR_OF_DAY) + "."
-                + start.get(Calendar.MINUTE) + " - "
-                + stop.get(Calendar.DAY_OF_MONTH) + "/"
-                + (stop.get(Calendar.MONTH) + 1) + "/" + stop.get(Calendar.YEAR)
-                + " " + stop.get(Calendar.HOUR_OF_DAY) + "."
-                + stop.get(Calendar.MINUTE) + "]";
+        return "[" + start.get(GregorianCalendar.DAY_OF_MONTH) + "/"
+                   + (start.get(GregorianCalendar.MONTH) + 1)  + "/"
+                   + start.get(GregorianCalendar.YEAR)         + " "
+                   + start.get(GregorianCalendar.HOUR_OF_DAY)  + "."
+                   + start.get(GregorianCalendar.MINUTE)       + " - "
+                   + stop.get(GregorianCalendar.DAY_OF_MONTH)  + "/"
+                   + (stop.get(GregorianCalendar.MONTH) + 1)   + "/"
+                   + stop.get(GregorianCalendar.YEAR)          + " "
+                   + stop.get(GregorianCalendar.HOUR_OF_DAY)   + "."
+                   + stop.get(GregorianCalendar.MINUTE)        + "]";
     }
 
 }
