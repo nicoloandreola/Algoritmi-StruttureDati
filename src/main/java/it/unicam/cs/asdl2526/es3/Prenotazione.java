@@ -33,8 +33,14 @@ public class Prenotazione implements Comparable<Prenotazione> {
      */
     public Prenotazione(String aula, TimeSlot timeSlot, String docente,
             String motivo) {
-        if(aula == null || docente == null || motivo == null || timeSlot == null)
-            throw new NullPointerException("Parametri NON validi!");
+        if (aula == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza aula");
+        if (timeSlot == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza time slot");
+        if (docente == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza docente");
+        if (motivo == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza motivo");
         this.docente = docente;
         this.motivo = motivo;
         this.aula = aula;
@@ -103,17 +109,15 @@ public class Prenotazione implements Comparable<Prenotazione> {
     }
 
     /*
-     * L'hashcode di una prenotazione si calcola a partire dai due campi usati
+     * L hashcode di una prenotazione si calcola a partire dai due campi usati
      * per equals.
      */
     @Override
     public int hashCode() {
         int prime = 31;
         int result = 1;
-        long temp = this.timeSlot.hashCode();
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = this.aula.hashCode();
-        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + this.timeSlot.hashCode();
+        result = prime * result + this.aula.hashCode();
         return result;
     }
 
@@ -126,8 +130,6 @@ public class Prenotazione implements Comparable<Prenotazione> {
     public int compareTo(Prenotazione o) {
         if(o == null)
             throw new NullPointerException("Parametro NON valido!");
-        if(this.equals(o))
-            return 0;
         if(this.timeSlot.compareTo(o.timeSlot) == 0) // se 2 prenotazioni hanno lo stesso timeSlot,
             return this.aula.compareTo(o.aula); // il confronto si basa sull'ordinamento tra le aule,
         return this.timeSlot.compareTo(o.timeSlot); // altrimenti su quello tra i timeSlot
