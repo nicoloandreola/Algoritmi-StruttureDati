@@ -24,7 +24,6 @@ public class PresenceFacility extends Facility {
      */
     public PresenceFacility(String codice, String descrizione) {
         super(codice, descrizione);
-        // TODO implementare
     }
 
     /*
@@ -34,8 +33,16 @@ public class PresenceFacility extends Facility {
      */
     @Override
     public boolean satisfies(Facility o) {
-        // TODO implementare
-        return false;
+        if(this == o)
+            return true;
+        if(o == null)
+            throw new NullPointerException("Parametro NON valido!");
+        if(!(o instanceof PresenceFacility))
+            return false;
+        return this.getCodice().equals(o.getCodice());
+    // Non serve fare il cast come nell equals poiché, visto che PresenceFacility è
+    // sottoclasse di Facility, posso accedere ai campi e chiamare i metodi della
+    // classe Facility anche con un'istanza della classe PresanceFacility
     }
 
 }

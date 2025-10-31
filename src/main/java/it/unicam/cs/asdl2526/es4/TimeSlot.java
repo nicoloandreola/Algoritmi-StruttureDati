@@ -6,7 +6,7 @@ package it.unicam.cs.asdl2526.es4;
 import java.util.GregorianCalendar;
 
 /**
- * Un time slot è un intervallo di tempo continuo che può essere associato ad
+ * Un time slot è un intervallo di tempo continuo che può essere associato a
  * una prenotazione. Gli oggetti della classe sono immutabili. Non sono ammessi
  * time slot che iniziano e finiscono nello stesso istante.
  * 
@@ -41,7 +41,12 @@ public class TimeSlot implements Comparable<TimeSlot> {
      *                                      stop
      */
     public TimeSlot(GregorianCalendar start, GregorianCalendar stop) {
-        // TODO implementare - riutilizzare il codice della ES 3 o migliorarlo
+        if(start == null)
+            throw new NullPointerException("L'istante di inizio NON può essere NULLO!");
+        if(stop == null)
+            throw new NullPointerException("L'istante di fine NON può essere NULLO!");
+        if(start.compareTo(stop) >= 0)
+            throw new IllegalArgumentException("Il valore di START deve essere MINORE di quello di STOP");
         this.start = start;
         this.stop = stop;
     }
@@ -67,8 +72,14 @@ public class TimeSlot implements Comparable<TimeSlot> {
      */
     @Override
     public boolean equals(Object obj) {
-        // TODO implementare - riutilizzare il codice della ES 3 o migliorarlo
-        return false;
+        if(this == obj)
+            return true;
+        if(obj == null)
+            return false;
+        if(!(obj instanceof TimeSlot))
+            return false;
+        TimeSlot other = (TimeSlot) obj;
+        return this.start.equals(other.start) && this.stop.equals(other.stop);
     }
 
     /*
@@ -78,8 +89,11 @@ public class TimeSlot implements Comparable<TimeSlot> {
      */
     @Override
     public int hashCode() {
-        // TODO implementare - riutilizzare il codice della ES 3 o migliorarlo
-        return -1;
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + this.start.hashCode();
+        result = prime * result + this.stop.hashCode();
+        return result;
     }
 
     /*
@@ -89,8 +103,12 @@ public class TimeSlot implements Comparable<TimeSlot> {
      */
     @Override
     public int compareTo(TimeSlot o) {
-        // TODO implementare - riutilizzare il codice della ES 3 o migliorarlo
-        return -1;
+        if(o == null)
+            throw new NullPointerException("Parametro NON valido!");
+        int result = this.start.compareTo(o.start);
+        if(result == 0) // Se iniziano nello stesso momento, allora confronto gli
+            result = this.stop.compareTo(o.stop); // istanti in cui finiscono
+        return result;
     }
 
     /**
@@ -116,7 +134,66 @@ public class TimeSlot implements Comparable<TimeSlot> {
      *                                      superano Integer.MAX_VALUE
      */
     public int getMinutesOfOverlappingWith(TimeSlot o) {
-        // TODO implementare - riutilizzare il codice della ES 3 o migliorarlo
+        if(o == null)
+            throw new NullPointerException("Parametro NON valido!");
+
+        // Caso in cui si toccano appena (OMISSIBILE in quanto alla fine
+        // restituisce -1 a prescindere se non sono in uno dei 4 casi)
+
+        if(this.stop.equals(o.start) || this.start.equals(o.stop))
+            return -1;
+
+        // Salvo tutti i confronti in delle variabili per evitare
+        // di richiamare il metodo compareTo in ogni caso da esaminare
+
+        int startStart = this.start.compareTo(o.start);
+        int startStop = this.start.compareTo(o.stop);
+        int stopStart = this.stop.compareTo(o.start);
+        int stopStop = this.stop.compareTo(o.stop);
+
+        // Variabile in cui memorizzo il risultato da ritornare alla fine
+        long result;
+
+        // CASO 1
+        // Questo timeslot inizia prima di quello passato e termina prima
+        // che quello passato come argomento sia finito (ma dopo che sia iniziato)
+        // this.start ... [o.start ... this.stop] ... o.stop
+        if (startStart < 0 && stopStop < 0 && stopStart > 0) {
+            // SOVRAPPOSIZIONE: dall'inizio di o alla fine di this
+            result = this.stop.getTimeInMillis() - o.start.getTimeInMillis();
+            return roundMinutesOfOverlapping(result);
+        }
+
+        // CASO 2
+        // Questo timeslot inizia prima di quello passato e termina
+        // dopo che quello passato come argomento sia finito
+        // this.start ... [o.start ... o.stop] ... this.stop
+        if (startStart < 0 && stopStop > 0) {
+            // SOVRAPPOSIZIONE: dall'inizio alla fine di o (tutto o)
+            result = o.stop.getTimeInMillis() - o.start.getTimeInMillis();
+            return roundMinutesOfOverlapping(result);
+        }
+
+        // CASO 3
+        // Questo timeslot inizia dopo di quello passato (ma prima che finisca)
+        // e termina dopo che quello passato come argomento sia finito
+        // o.start ... [this.start ... o.stop] ... this.stop
+        if (startStart > 0 && stopStop > 0 && startStop < 0) {
+            // SOVRAPPOSIZIONE: dall'inizio di this alla fine di o
+            result = o.stop.getTimeInMillis() - this.start.getTimeInMillis();
+            return roundMinutesOfOverlapping(result);
+        }
+
+        // CASO 4
+        // Questo timeslot inizia dopo di quello passato e termina
+        // prima che quello passato come argomento sia finito
+        // o.start ... [this.start ... this.stop] ... o.stop
+        if (startStart > 0 && stopStop < 0) {
+            // SOVRAPPOSIZIONE: dall'inizio alla fine di this (tutto this)
+            result = this.stop.getTimeInMillis() - this.start.getTimeInMillis();
+            return roundMinutesOfOverlapping(result);
+        }
+        // Non si toccano per niente, quindi non c'è sovrapposizione
         return -1;
     }
 
@@ -133,7 +210,10 @@ public class TimeSlot implements Comparable<TimeSlot> {
      *                                  se il time slot passato è nullo
      */
     public boolean overlapsWith(TimeSlot o) {
-        // TODO implementare - riutilizzare il codice della ES 3 o migliorarlo
+        if(o == null)
+            throw new NullPointerException("Parametro NON valido!");
+        if(this.getMinutesOfOverlappingWith(o) > MINUTES_OF_TOLERANCE_FOR_OVERLAPPING)
+            return true;
         return false;
     }
 
@@ -148,11 +228,33 @@ public class TimeSlot implements Comparable<TimeSlot> {
      */
     @Override
     public String toString() {
-        // TODO implementare - riutilizzare il codice della ES 3 o migliorarlo
-        return null;
+       StringBuilder s = new StringBuilder();
+       s.append("[").append(this.start.get(GregorianCalendar.DAY_OF_MONTH)).append("/");
+       s.append(this.start.get(GregorianCalendar.MONTH) + 1).append("/");
+       s.append(this.start.get(GregorianCalendar.YEAR)).append(" ");
+       s.append(this.start.get(GregorianCalendar.HOUR_OF_DAY)).append(".");
+       s.append(this.start.get(GregorianCalendar.MINUTE)).append(" - ");
+       s.append(this.stop.get(GregorianCalendar.DAY_OF_MONTH)).append("/");
+       s.append(this.stop.get(GregorianCalendar.MONTH) + 1).append("/");
+       s.append(this.stop.get(GregorianCalendar.YEAR)).append(" ");
+       s.append(this.stop.get(GregorianCalendar.HOUR_OF_DAY)).append(".");
+       s.append(this.stop.get(GregorianCalendar.MINUTE)).append("]");
+       return s.toString();
     }
 
-    // TODO aggiungere eventuali metodi privati a scopo di implementazione -
-    // riutilizzare il codice della ES 3 o migliorarlo
+    // Metodo che arrotonda il risultato di getMinutesOfOverlappingWith
+    // in accordo con la sua API
+    private int roundMinutesOfOverlapping(long x) {
+        // 1 minuto = 60 secondi quindi 1 minuto = (60 * 1000) millisecondi
+        // perciò per passare dai millisecondi ai minuti divido per 60000
+        long result = x / 60000;
+        // Utilizzando la divisione intera (non tra double), eventuali decimali (SECONDI
+        // e MILLISECONDI) vengono buttati via e viene presa solo la parte intera (MINUTI),
+        // perciò ottengo automaticamente l'approssimazione per difetto richiesta dall'API
+        if (result > Integer.MAX_VALUE)
+            throw new IllegalArgumentException("Numero di minuti di sovrapposizione TROPPO GRANDE!");
+        return (int) result; // Se non è maggiore di Integer.MAX_VALUE, allora
+        // facendo il cast a int sono sicuro che non avrò perdita di informazione
+    }
 
 }

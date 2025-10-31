@@ -33,7 +33,14 @@ public class Prenotazione implements Comparable<Prenotazione> {
      */
     public Prenotazione(Aula aula, TimeSlot timeSlot, String docente,
             String motivo) {
-        // TODO implementare
+        if (aula == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza aula");
+        if (timeSlot == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza time slot");
+        if (docente == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza docente");
+        if (motivo == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza motivo");
         this.aula = aula;
         this.timeSlot = timeSlot;
         this.docente = docente;
@@ -84,8 +91,11 @@ public class Prenotazione implements Comparable<Prenotazione> {
 
     @Override
     public int hashCode() {
-        // TODO implementare
-        return -1;
+        int prime = 31;
+        int result = 1;
+        result = prime * result + this.aula.hashCode();
+        result = prime * result + this.timeSlot.hashCode();
+        return result;
     }
 
     /*
@@ -94,8 +104,14 @@ public class Prenotazione implements Comparable<Prenotazione> {
      */
     @Override
     public boolean equals(Object obj) {
-        // TODO implementare
-        return false;
+        if(this == obj)
+            return true;
+        if(obj == null)
+            return false;
+        if(!(obj instanceof Prenotazione))
+            return false;
+        Prenotazione other = (Prenotazione) obj;
+        return this.aula.equals(other.aula) && this.timeSlot.equals(other.timeSlot);
     }
 
     /*
@@ -105,8 +121,11 @@ public class Prenotazione implements Comparable<Prenotazione> {
      */
     @Override
     public int compareTo(Prenotazione o) {
-        // TODO implementare
-        return -1;
+        if(o == null)
+            throw new NullPointerException("Parametro NON può essere NULLO!");
+        if(this.timeSlot.equals(o.timeSlot))
+            return this.aula.compareTo(o.aula);
+        return this.timeSlot.compareTo(o.timeSlot);
     }
 
     @Override

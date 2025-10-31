@@ -10,17 +10,17 @@ package it.unicam.cs.asdl2526.es4;
 public class Aula implements Comparable<Aula> {
 
     /*
-     * numero iniziale delle posizioni dell'array facilities. Se viene richiesto
-     * di inserire una facility e l'array è pieno questo viene raddoppiato. La
-     * costante è protected solo per consentirne l'accesso ai test JUnit
+     * Numero iniziale delle posizioni dell array facilities. Se viene richiesto
+     * di inserire una facility e l array è pieno questo viene raddoppiato. La
+     * costante è protected solo per consentirne l'accesso ai "test JUnit"
      */
     protected static final int INIT_NUM_FACILITIES = 5;
 
     /*
-     * numero iniziale delle posizioni dell'array prenotazioni. Se viene
-     * richiesto di inserire una prenotazione e l'array è pieno questo viene
+     * Numero iniziale delle posizioni dell array prenotazioni. Se viene
+     * richiesto di inserire una prenotazione e l array è pieno questo viene
      * raddoppiato. La costante è protected solo per consentirne l'accesso ai
-     * test JUnit.
+     * "test JUnit".
      */
     protected static final int INIT_NUM_PRENOTAZIONI = 100;
 
@@ -31,9 +31,9 @@ public class Aula implements Comparable<Aula> {
     private final String location;
 
     /*
-     * Insieme delle facilities di quest'aula. L'array viene creato all'inizio
+     * Insieme delle facilities di quest'aula. L array viene creato all'inizio
      * della dimensione specificata nella costante INIT_NUM_FACILITIES. Il
-     * metodo addFacility(Facility) raddoppia l'array qualora non ci sia più
+     * metodo addFacility(Facility) raddoppia l array qualora non ci sia più
      * spazio per inserire la facility.
      */
     private Facility[] facilities;
@@ -42,10 +42,10 @@ public class Aula implements Comparable<Aula> {
     private int numFacilities;
 
     /*
-     * Insieme delle prenotazioni per quest'aula. L'array viene creato
+     * Insieme delle prenotazioni per quest'aula. L array viene creato
      * all'inizio della dimensione specificata nella costante
      * INIT_NUM_PRENOTAZIONI. Il metodo addPrenotazione(TimeSlot, String,
-     * String) raddoppia l'array qualora non ci sia più spazio per inserire la
+     * String) raddoppia l array qualora non ci sia più spazio per inserire la
      * prenotazione.
      */
     private Prenotazione[] prenotazioni;
@@ -67,10 +67,16 @@ public class Aula implements Comparable<Aula> {
      *                                  richieste è nulla
      */
     public Aula(String nome, String location) {
-        // TODO implementare
+        if(nome == null)
+            throw new NullPointerException("Il nome NON può essere NULLO!");
+        if(location == null)
+            throw new NullPointerException("La location NON può essere NULLA!");
         this.nome = nome;
         this.location = location;
-
+        this.facilities = new Facility[INIT_NUM_FACILITIES];
+        this.numFacilities = 0;
+        this.prenotazioni = new Prenotazione[INIT_NUM_PRENOTAZIONI];
+        this.numPrenotazioni = 0;
     }
 
     /*
@@ -78,22 +84,26 @@ public class Aula implements Comparable<Aula> {
      */
     @Override
     public int hashCode() {
-        // TODO implementare
-        return -1;
+        return this.nome.hashCode();
     }
 
     /* Due aule sono uguali se e solo se hanno lo stesso nome */
     @Override
     public boolean equals(Object obj) {
-        // TODO implementare
-        return false;
+        if(this == obj)
+            return true;
+        if(obj == null)
+            return false;
+        if(!(obj instanceof Aula))
+            return false;
+        Aula other = (Aula) obj;
+        return this.nome.equals(other.nome);
     }
 
     /* L'ordinamento naturale si basa sul nome dell'aula */
     @Override
     public int compareTo(Aula o) {
-        // TODO implementare
-        return -1;
+        return this.nome.compareTo(o.nome);
     }
 
     /**
@@ -139,7 +149,7 @@ public class Aula implements Comparable<Aula> {
     }
 
     /**
-     * Aggiunge una faciltity a questa aula. Controlla se la facility è già
+     * Aggiunge una facility a questa aula. Controlla se la facility è già
      * presente, nel qual caso non la inserisce.
      * 
      * @param f
@@ -157,8 +167,22 @@ public class Aula implements Comparable<Aula> {
          * Nota: attenzione bis! Si noti che per le sottoclassi di Facility non
          * è richiesto di ridefinire ulteriormente il metodo equals...
          */
-        // TODO implementare
-        return false;
+        if(f == null)
+            throw new NullPointerException("Parametro NON valido!");
+        // Controllo se la facility è già presente
+        for(int i = 0; i < this.numFacilities; i++) {
+            if (this.facilities[i].equals(f))
+                return false;
+        }
+        // essendo il raddoppio necessario quando l array è pieno quest'ultimo
+        // dovrebbe avvenire quando il numero di elementi attuale (numFacilities)
+        // e la lunghezza dell array (facilities.length) coincidono.
+        if(this.numFacilities == this.facilities.length)
+            this.facilities = (Facility[]) doubleArray(this.facilities);
+        // dopo aver controllato se c'è spazio, ed eventualmente dopo averlo
+        // aggiunto con il metodo privato, inserisco la nuova facility
+        this.facilities[numFacilities++] = f;
+        return true;
     }
 
     /**
@@ -174,8 +198,13 @@ public class Aula implements Comparable<Aula> {
      *                                  se il time slot passato è nullo
      */
     public boolean isFree(TimeSlot ts) {
-        // TODO implementare
-        return false;
+        if(ts == null)
+            throw new NullPointerException("Parametro NON valido!");
+        for(int i = 0; i < numPrenotazioni; i++) {
+            if (this.prenotazioni[i].getTimeSlot().overlapsWith(ts))
+                return false;
+        }
+        return true;
     }
 
     /**
@@ -192,8 +221,20 @@ public class Aula implements Comparable<Aula> {
      *                                  se il set di facility richieste è nullo
      */
     public boolean satisfiesFacilities(Facility[] requestedFacilities) {
-        // TODO implementare
-        return false;
+        if(requestedFacilities == null)
+            throw new NullPointerException("Parametro NON valido!");
+        boolean found = false; // flag per contrassegnare quando una facility è soddisfatta
+        for(int i = 0; i < requestedFacilities.length; i++) {
+            if(requestedFacilities[i] != null) // vanno controllate solo le posizioni non NULLE
+                for (int j = 0; (j < numFacilities && !found); j++) {
+                    if (this.facilities[j].satisfies(requestedFacilities[i]))
+                        found = true;
+                }
+            if(!found) // se found è ancora false, significa che nessuna
+                return false; // facility soddisfa requestedFacilities[i]
+        }
+        return true; // se arrivo qua significa che tutte le facilities sono soddisfatte
+
     }
 
     /**
@@ -211,8 +252,36 @@ public class Aula implements Comparable<Aula> {
      *                                      richieste è nulla.
      */
     public void addPrenotazione(TimeSlot ts, String docente, String motivo) {
-        // TODO implementare
+        if (ts == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza time slot");
+        if (docente == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza docente");
+        if (motivo == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza motivo");
+        if(!this.isFree(ts))
+            throw new IllegalArgumentException("Prenotazione NON disponibile a causa di SOVRAPPOSIZIONE!");
+        if(this.numPrenotazioni == this.prenotazioni.length)
+            this.prenotazioni = (Prenotazione[]) doubleArray(this.prenotazioni);
+        this.prenotazioni[this.numPrenotazioni++] = new Prenotazione(this, ts, docente, motivo);
     }
 
-    // TODO inserire eventuali metodi privati per questioni di organizzazione
+    // Metodo per raddoppiare un array (di tipo Object poiché mi serve
+    // per raddoppiare sia l array di prenotazioni che quello di facilities,
+    // e questi due tipi classe non stanno in relazione tra loro)
+
+    private Object[] doubleArray(Object[] vecchio) {
+        if(vecchio instanceof Facility[]) {
+            Facility[] nuovo = new Facility[vecchio.length * 2];
+            for(int i = 0; i < vecchio.length; i++)
+                nuovo[i] = (Facility) vecchio[i];
+            return nuovo;
+        }
+        if(vecchio instanceof Prenotazione[]) {
+            Prenotazione[] nuovo = new Prenotazione[vecchio.length * 2];
+            for(int i = 0; i < vecchio.length; i++)
+                nuovo[i] = (Prenotazione) vecchio[i];
+            return nuovo;
+        }
+        return null;
+    }
 }

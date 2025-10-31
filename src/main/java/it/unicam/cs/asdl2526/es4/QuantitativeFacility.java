@@ -50,8 +50,21 @@ public class QuantitativeFacility extends Facility {
      */
     @Override
     public boolean satisfies(Facility o) {
-        // TODO implementare
-        return false;
+        if(this == o)
+            return true;
+        if(o == null)
+            throw new NullPointerException("Parametro NON valido!");
+        if(!(o instanceof QuantitativeFacility))
+            return false;
+        QuantitativeFacility other = (QuantitativeFacility) o;
+        if(!this.getCodice().equals(other.getCodice())) // qui avrei potuto usare anche o invece che other
+            return false; // se non hanno lo stesso codice, non la soddisfa
+        return this.quantity >= other.quantity; // se hanno lo stesso codice, questa facility
+        // soddisfa quella data se la quantità della prima è al massimo uguale alla quantità della seconda
+
+        // In questo caso è necessario il cast perché il campo "quantity" appartiene
+        // solo alle istanze della classe QuantitativeFacility, quindi non si può accedervi
+        // con un'istanza della super classe Facility
     }
 
 }

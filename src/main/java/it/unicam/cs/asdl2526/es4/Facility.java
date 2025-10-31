@@ -3,7 +3,7 @@ package it.unicam.cs.asdl2526.es4;
 /**
  * Una facility generica è una caratteristica o delle dotazioni che una certa
  * aula può avere. La classe va specificata ulteriormente per definire i diversi
- * tipi di facilities.
+ * tipi di facilities: esistono facilities quantitative e facilities "sì/no".
  * 
  * @author Template: Luca Tesei, Implementation: Collective
  *
@@ -26,7 +26,10 @@ public abstract class Facility {
      *                                  richieste è nulla.
      */
     public Facility(String codice, String descrizione) {
-        // TODO implementare
+        if(codice == null)
+            throw new NullPointerException("Il codice della facility non può essere NULLO!");
+        if(descrizione == null)
+            throw new NullPointerException("La descrizione NON può essere NULLA!");
         this.codice = codice;
         this.descrizione = descrizione;
     }
@@ -51,8 +54,7 @@ public abstract class Facility {
      */
     @Override
     public int hashCode() {
-        // TODO implementare
-        return -1;
+        return this.codice.hashCode();
     }
 
     /*
@@ -60,8 +62,14 @@ public abstract class Facility {
      */
     @Override
     public boolean equals(Object obj) {
-        // TODO implementare
-        return false;
+        if(this == obj)
+            return true;
+        if(obj == null)
+            return false;
+        if(!(obj instanceof Facility))
+            return false;
+        Facility o = (Facility) obj;
+        return this.codice.equals(o.codice);
     }
 
     @Override
