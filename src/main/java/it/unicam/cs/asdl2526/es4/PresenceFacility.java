@@ -42,7 +42,7 @@ public class PresenceFacility extends Facility {
         return this.getCodice().equals(o.getCodice());
     // Non serve fare il cast come nell equals poiché, visto che PresenceFacility è
     // sottoclasse di Facility, posso accedere ai campi e chiamare i metodi della
-    // classe Facility anche con un'istanza della classe PresanceFacility
+    // classe Facility anche con un'istanza della classe PresenceFacility
     }
 
 }

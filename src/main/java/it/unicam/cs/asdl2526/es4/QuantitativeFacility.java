@@ -63,8 +63,8 @@ public class QuantitativeFacility extends Facility {
         // soddisfa quella data se la quantità della prima è al massimo uguale alla quantità della seconda
 
         // In questo caso è necessario il cast perché il campo "quantity" appartiene
-        // solo alle istanze della classe QuantitativeFacility, quindi non si può accedervi
-        // con un'istanza della super classe Facility
+        // solo alle istanze della sottoclasse QuantitativeFacility, quindi non si
+        // può accedervi con un'istanza della super classe Facility
     }
 
 }

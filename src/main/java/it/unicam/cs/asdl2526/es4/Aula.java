@@ -223,18 +223,27 @@ public class Aula implements Comparable<Aula> {
     public boolean satisfiesFacilities(Facility[] requestedFacilities) {
         if(requestedFacilities == null)
             throw new NullPointerException("Parametro NON valido!");
-        boolean found = false; // flag per contrassegnare quando una facility è soddisfatta
+        boolean allNull = true; // flag per verificare se tutte posizioni dell array passato
+        // sono NULL e quindi restituire true
         for(int i = 0; i < requestedFacilities.length; i++) {
-            if(requestedFacilities[i] != null) // vanno controllate solo le posizioni non NULLE
-                for (int j = 0; (j < numFacilities && !found); j++) {
+            boolean found = false; // flag per contrassegnare quando una facility è soddisfatta.
+            // Va definito fuori dal ciclo interno ma dentro quello esterno, poiché altrimenti
+            // dopo che diventa true per la prima volta, rimane true per sempre (non viene
+            // riportato a false all'inizio delle iterazioni successive)
+            if(requestedFacilities[i] != null) { // vanno controllate solo le posizioni non NULLE
+                allNull = false;
+                for (int j = 0; (j < numFacilities && !found); j++)
                     if (this.facilities[j].satisfies(requestedFacilities[i]))
                         found = true;
-                }
-            if(!found) // se found è ancora false, significa che nessuna
-                return false; // facility soddisfa requestedFacilities[i]
+            }
+            if(!allNull && !found) // se found è ancora false, significa che nessuna
+                return false; // facility soddisfa requestedFacilities[i].
+            // Devo aggiungere al controllo anche allNull poiché se requestedFacilities[i]
+            // è uguale a null, found rimane false visto che non si entra per niente nel
+            // ciclo interno, e quindi il metodo restituirebbe false; ma come descritto
+            // nell'API, le posizioni NULLE vanno IGNORATE
         }
         return true; // se arrivo qua significa che tutte le facilities sono soddisfatte
-
     }
 
     /**
@@ -260,8 +269,13 @@ public class Aula implements Comparable<Aula> {
             throw new NullPointerException("Tentativo di costruire una prenotazione senza motivo");
         if(!this.isFree(ts))
             throw new IllegalArgumentException("Prenotazione NON disponibile a causa di SOVRAPPOSIZIONE!");
+        // essendo il raddoppio necessario quando l array è pieno quest'ultimo
+        // dovrebbe avvenire quando il numero di elementi attuale (numPrenotazioni)
+        // e la lunghezza dell array (prenotazioni.length) coincidono.
         if(this.numPrenotazioni == this.prenotazioni.length)
             this.prenotazioni = (Prenotazione[]) doubleArray(this.prenotazioni);
+        // dopo aver controllato se c'è spazio, ed eventualmente dopo averlo
+        // aggiunto con il metodo privato, creo la nuova prenotazione e la inserisco
         this.prenotazioni[this.numPrenotazioni++] = new Prenotazione(this, ts, docente, motivo);
     }
 
@@ -283,5 +297,8 @@ public class Aula implements Comparable<Aula> {
             return nuovo;
         }
         return null;
+    // Array struttura dati dalla dimensione fissa, una volta creato non si
+    // può cambiare la sua lunghezza: per poterlo allungare bisogna crearne
+    // uno nuovo dalla dimensione maggiore e ricopiarci sopra quello che c’era
     }
 }
