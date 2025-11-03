@@ -36,7 +36,7 @@ public class EquazioniModificabiliTextualFrontEnd {
         double c = 1;
         while (!terminate) {
             // leggo il parametro a
-            boolean retry = false;
+            boolean retry;
             do {
                 retry = false; /* impostiamo all'inizio del ciclo il valore del flag RETRY a false, poiché
                 altrimenti resta sempre true e quindi il ciclo va in loop visto che la condizione è sempre vera */
