@@ -158,7 +158,7 @@ public class TimeSlot implements Comparable<TimeSlot> {
         // Questo timeslot inizia prima di quello passato e termina prima
         // che quello passato come argomento sia finito (ma dopo che sia iniziato)
         // this.start ... [o.start ... this.stop] ... o.stop
-        if (startStart < 0 && stopStop < 0 && stopStart > 0) {
+        if (startStart <= 0 && stopStop <= 0 && stopStart > 0) {
             // SOVRAPPOSIZIONE: dall'inizio di o alla fine di this
             result = this.stop.getTimeInMillis() - o.start.getTimeInMillis();
             return roundMinutesOfOverlapping(result);
@@ -168,7 +168,7 @@ public class TimeSlot implements Comparable<TimeSlot> {
         // Questo timeslot inizia prima di quello passato e termina
         // dopo che quello passato come argomento sia finito
         // this.start ... [o.start ... o.stop] ... this.stop
-        if (startStart < 0 && stopStop > 0) {
+        if (startStart <= 0 && stopStop >= 0) {
             // SOVRAPPOSIZIONE: dall'inizio alla fine di o (tutto o)
             result = o.stop.getTimeInMillis() - o.start.getTimeInMillis();
             return roundMinutesOfOverlapping(result);
@@ -178,7 +178,7 @@ public class TimeSlot implements Comparable<TimeSlot> {
         // Questo timeslot inizia dopo di quello passato (ma prima che finisca)
         // e termina dopo che quello passato come argomento sia finito
         // o.start ... [this.start ... o.stop] ... this.stop
-        if (startStart > 0 && stopStop > 0 && startStop < 0) {
+        if (startStart >= 0 && stopStop >= 0 && startStop < 0) {
             // SOVRAPPOSIZIONE: dall'inizio di this alla fine di o
             result = o.stop.getTimeInMillis() - this.start.getTimeInMillis();
             return roundMinutesOfOverlapping(result);
@@ -188,7 +188,7 @@ public class TimeSlot implements Comparable<TimeSlot> {
         // Questo timeslot inizia dopo di quello passato e termina
         // prima che quello passato come argomento sia finito
         // o.start ... [this.start ... this.stop] ... o.stop
-        if (startStart > 0 && stopStop < 0) {
+        if (startStart >= 0 && stopStop <= 0) {
             // SOVRAPPOSIZIONE: dall'inizio alla fine di this (tutto this)
             result = this.stop.getTimeInMillis() - this.start.getTimeInMillis();
             return roundMinutesOfOverlapping(result);
