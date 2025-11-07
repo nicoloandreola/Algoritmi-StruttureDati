@@ -31,8 +31,9 @@ public class GestoreAule {
      *                                  se l'aula passata è nulla
      */
     public boolean addAula(Aula a) {
-        // TODO implementare
-        return false;
+        if(a == null)
+            throw new NullPointerException("Parametro NON valido!");
+        return this.aule.add(a);
     }
 
     /**
@@ -63,8 +64,13 @@ public class GestoreAule {
      */
     public Set<Aula> cercaAuleLibere(Set<Facility> requestedFacilities,
             TimeSlot ts) {
-        // TODO implementare
-        return null;
+        if(requestedFacilities == null || ts == null)
+            throw new NullPointerException("Parametri NON validi!");
+        Set<Aula> result = new HashSet<Aula>();
+        for(Aula a : this.aule)
+            if(a.isFree(ts) && a.satisfiesFacilities(requestedFacilities))
+                result.add(a);
+        return result;
     }
 
 }

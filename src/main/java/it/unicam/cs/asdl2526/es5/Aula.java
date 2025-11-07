@@ -43,7 +43,10 @@ public class Aula implements Comparable<Aula> {
      *                                  richieste è nulla
      */
     public Aula(String nome, String location) {
-        // TODO implementare
+        if(nome == null)
+            throw new NullPointerException("Il NOME dell'aula non può essere NULLO!");
+        if(location == null)
+            throw new NullPointerException("La LOCATION dell'aula non può essere NULLA!");
         this.nome = nome;
         this.location = location;
         this.facilities = new HashSet<Facility>();
@@ -65,7 +68,10 @@ public class Aula implements Comparable<Aula> {
      *                                  richieste è nulla
      */
     public Aula(String nome, String location, Set<Facility> facilities) {
-        // TODO implementare
+        if(nome == null)
+            throw new NullPointerException("Il NOME dell'aula non può essere NULLO!");
+        if(location == null)
+            throw new NullPointerException("La LOCATION dell'aula non può essere NULLA!");
         this.nome = nome;
         this.location = location;
         this.facilities = facilities;
@@ -77,22 +83,28 @@ public class Aula implements Comparable<Aula> {
      */
     @Override
     public int hashCode() {
-        // TODO implementare
-        return -1;
+        return this.nome.hashCode();
     }
 
     /* Due aule sono uguali se e solo se hanno lo stesso nome */
     @Override
     public boolean equals(Object obj) {
-        // TODO implementare
-        return false;
+        if(this == obj)
+            return true;
+        if(obj == null)
+            return false;
+        if(!(obj instanceof Aula))
+            return false;
+        Aula other = (Aula) obj;
+        return this.nome.equals(other.nome);
     }
 
     /* L'ordinamento naturale si basa sul nome dell'aula */
     @Override
     public int compareTo(Aula o) {
-        // TODO implementare
-        return -1;
+        if(o == null)
+            throw new NullPointerException("Parametro NON valido!");
+        return this.nome.compareTo(o.nome);
     }
 
     /**
@@ -124,7 +136,7 @@ public class Aula implements Comparable<Aula> {
     }
 
     /**
-     * Aggiunge una faciltity a questa aula.
+     * Aggiunge una facility a questa aula.
      * 
      * @param f
      *              la facility da aggiungere
@@ -134,8 +146,12 @@ public class Aula implements Comparable<Aula> {
      *                                  se la facility passata è nulla
      */
     public boolean addFacility(Facility f) {
-        // TODO implementare
-        return false;
+        if(f == null)
+            throw new NullPointerException("Parametro NON valido!");
+        // Come specificato nell'API di HashSet, metodo add aggiunge l'elemento
+        // e restituisce true se e solo se non è già presente, quindi non serve
+        // fare alcun controllo: basta invocare il metodo add su this.facilities
+        return this.facilities.add(f);
     }
 
     /**
@@ -150,15 +166,21 @@ public class Aula implements Comparable<Aula> {
      *                                  se il time slot passato è nullo
      */
     public boolean isFree(TimeSlot ts) {
-        // TODO implementare
         /*
          * NOTA: sfruttare l'ordinamento tra le prenotazioni per rispondere in
          * maniera efficiente: poiché le prenotazioni sono in ordine crescente
          * di time slot se arrivo a una prenotazione che segue il time slot
-         * specificato posso concludere che l'aula è libera nel time slot
-         * desiderato e posso interrompere la ricerca
+         * specificato posso concludere che l'aula è libera nel time slot desiderato
+         * e posso interrompere la ricerca (non ho più un T(n) ma un O(n))
          */
-        return false;
+        if(ts == null)
+            throw new NullPointerException("Parametro NON valido!");
+        for(Prenotazione p : this.prenotazioni)
+            if(p.getTimeSlot().overlapsWith(ts))
+                return false;
+            else if(p.getTimeSlot().compareTo(ts) > 0)
+                return true;
+        return true;
     }
 
     /**
@@ -174,7 +196,18 @@ public class Aula implements Comparable<Aula> {
      *                                  se il set di facility richieste è nullo
      */
     public boolean satisfiesFacilities(Set<Facility> requestedFacilities) {
-        // TODO implementare
+        if(requestedFacilities == null)
+            throw new NullPointerException("Parametro NON valido!");
+        for(Facility rf : requestedFacilities) {
+            boolean found = false;
+            for(Facility f : this.facilities) {
+                while (!found)
+                    if (f.satisfies(rf))
+                        found = true;
+            }
+            if(!found)
+                return false;
+        }
         return false;
     }
 
@@ -193,7 +226,15 @@ public class Aula implements Comparable<Aula> {
      *                                      richieste è nulla.
      */
     public void addPrenotazione(TimeSlot ts, String docente, String motivo) {
-        // TODO implementare
+        if (ts == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza time slot");
+        if (docente == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza docente");
+        if (motivo == null)
+            throw new NullPointerException("Tentativo di costruire una prenotazione senza motivo");
+        if(!this.isFree(ts))
+            throw new IllegalArgumentException("Prenotazione NON disponibile!");
+        this.prenotazioni.add(new Prenotazione(this, ts, docente, motivo));
     }
 
     /**
@@ -207,8 +248,9 @@ public class Aula implements Comparable<Aula> {
      *                                  se la prenotazione passata è null
      */
     public boolean removePrenotazione(Prenotazione p) {
-        // TODO implementare
-        return false;
+        if(p == null)
+            throw new NullPointerException("Parametro NON valido!");
+        return this.prenotazioni.remove(p);
     }
 
     /**
@@ -223,13 +265,17 @@ public class Aula implements Comparable<Aula> {
      *                                  se il punto nel tempo passato è nullo.
      */
     public boolean removePrenotazioniBefore(GregorianCalendar timePoint) {
-        // TODO implementare
         /*
          * NOTA: sfruttare l'ordinamento tra le prenotazioni per rispondere in
          * maniera efficiente: poiché le prenotazioni sono in ordine crescente
          * di time slot se ho raggiunto una prenotazione con tempo di inizio
          * maggiore del tempo indicato posso smettere la procedura
          */
+        if(timePoint == null)
+            throw new NullPointerException("Parametro NON valido!");
+        for(Prenotazione p : this.prenotazioni)
+            if(timePoint.compareTo(p.getTimeSlot().getStart()) > 0)
+                this.prenotazioni.remove(p);
         return false;
     }
 }
