@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Iterator;
 
-// TODO importare eventuali classi o interfacce che servono
 
 /**
  * Un oggetto della classe aula rappresenta una certa aula con le sue facilities
@@ -72,6 +72,8 @@ public class Aula implements Comparable<Aula> {
             throw new NullPointerException("Il NOME dell'aula non può essere NULLO!");
         if(location == null)
             throw new NullPointerException("La LOCATION dell'aula non può essere NULLA!");
+        if(facilities == null)
+            throw new NullPointerException("L'insieme di FACILITIES non può essere NULL!");
         this.nome = nome;
         this.location = location;
         this.facilities = facilities;
@@ -98,6 +100,7 @@ public class Aula implements Comparable<Aula> {
         Aula other = (Aula) obj;
         return this.nome.equals(other.nome);
     }
+
 
     /* L'ordinamento naturale si basa sul nome dell'aula */
     @Override
@@ -175,12 +178,23 @@ public class Aula implements Comparable<Aula> {
          */
         if(ts == null)
             throw new NullPointerException("Parametro NON valido!");
-        for(Prenotazione p : this.prenotazioni)
-            if(p.getTimeSlot().overlapsWith(ts))
+        // Per scorrere tutte le prenotazioni utilizzo un FOREACH
+        for(Prenotazione p : this.prenotazioni) {
+            // Se incontro una prenotazione che ha un ts che si sovrappone
+            // con quello passato. PRIMA DI ARRIVARE A UNA CHE LO SEGUE,
+            // devo restituire FALSE in quanto significa che non è libera
+            if (p.getTimeSlot().overlapsWith(ts))
                 return false;
-            else if(p.getTimeSlot().compareTo(ts) > 0)
+            // Altrimenti, se arrivo a una prenotazione che segue il time slot
+            // specificato, senza averne trovata nessuna prima con cui si
+            // sovrappone, posso concludere che l'aula è libera e restituire TRUE
+            // poiché le prenotazioni sono in ordine crescente di time slot e
+            // quindi sicuramente dopo non ne troverò nessuno che si sovrappone
+            if (p.getTimeSlot().compareTo(ts) > 0)
                 return true;
-        return true;
+        }
+        // Se ho terminato le prenotazioni e nessuna si è sovrapposta significa
+        return true; // che è libera
     }
 
     /**
@@ -196,19 +210,27 @@ public class Aula implements Comparable<Aula> {
      *                                  se il set di facility richieste è nullo
      */
     public boolean satisfiesFacilities(Set<Facility> requestedFacilities) {
+        // Riscritto codice ES4 con FOREACH al posto di FOR CLASSICI
         if(requestedFacilities == null)
             throw new NullPointerException("Parametro NON valido!");
+        boolean allNull = true;
         for(Facility rf : requestedFacilities) {
             boolean found = false;
-            for(Facility f : this.facilities) {
-                while (!found)
-                    if (f.satisfies(rf))
+            if(rf != null)
+                allNull = false;
+            for(Facility f : this.facilities)
+                // Al posto di usare la condizione !found per uscire dal ciclo
+                // utilizzando un FOREACH posso usare il comando break che
+                // permette di uscire subito dal ciclo più interno senza continuare
+                // a scorrere il set (tanto ormai la facility la ho trovata)
+                    if (f.satisfies(rf)) {
                         found = true;
-            }
-            if(!found)
+                        break;
+                    }
+            if(!allNull && !found)
                 return false;
         }
-        return false;
+        return true;
     }
 
     /**
@@ -232,8 +254,10 @@ public class Aula implements Comparable<Aula> {
             throw new NullPointerException("Tentativo di costruire una prenotazione senza docente");
         if (motivo == null)
             throw new NullPointerException("Tentativo di costruire una prenotazione senza motivo");
+        // Se isFree(ts) restituisce false significa che c'è una sovrapposizione
         if(!this.isFree(ts))
             throw new IllegalArgumentException("Prenotazione NON disponibile!");
+        // Se libera, creo la prenotazione e la aggiungo al set
         this.prenotazioni.add(new Prenotazione(this, ts, docente, motivo));
     }
 
@@ -250,6 +274,8 @@ public class Aula implements Comparable<Aula> {
     public boolean removePrenotazione(Prenotazione p) {
         if(p == null)
             throw new NullPointerException("Parametro NON valido!");
+        // Come per addFacility, posso utilizzare direttamente il metodo
+        // della classe di this.prenotazioni (TreeSet in questo caso)
         return this.prenotazioni.remove(p);
     }
 
@@ -273,9 +299,25 @@ public class Aula implements Comparable<Aula> {
          */
         if(timePoint == null)
             throw new NullPointerException("Parametro NON valido!");
-        for(Prenotazione p : this.prenotazioni)
-            if(timePoint.compareTo(p.getTimeSlot().getStart()) > 0)
-                this.prenotazioni.remove(p);
-        return false;
+        // uso un flag per determinare se sono state fatte cancellazioni
+        boolean removed = false;
+        // scorro le prenotazioni nell'ordine canonico che è in base al tempo di
+        // inizio usando un iterator perché devo cancellare alcune prenotazioni
+        // durante lo scorrimento (con un FOREACH verrebbe lanciata un'eccezione)
+        Iterator<Prenotazione> i = this.prenotazioni.iterator();
+        while (i.hasNext()) {
+            Prenotazione p = i.next();
+            int cmp = timePoint.compareTo(p.getTimeSlot().getStart());
+            if (cmp >= 0) {
+                // se timePoint segue o è uguale a p.getTimeSlot().getStart()
+                // allora significa che la prenotazione è da cancellare
+                i.remove();
+                removed = true;
+            } else // altrimenti (cmp < 0) significa che ho raggiunto una prenotazione con tempo
+                // di inizio maggiore del tempo indicato e quindi posso smettere la procedura.
+                break;
+        }
+        return removed; // una volta uscito dal while ritorno il flag: se almeno
+        // una prenotazione è stata rimossa allora questo sarà true, altrimenti false
     }
 }

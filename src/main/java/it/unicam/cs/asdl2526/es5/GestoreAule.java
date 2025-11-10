@@ -33,6 +33,8 @@ public class GestoreAule {
     public boolean addAula(Aula a) {
         if(a == null)
             throw new NullPointerException("Parametro NON valido!");
+        // Basta chiamare il metodo add della classe HashSet
+        // (ci penserà lui a controllare se già presente o meno)
         return this.aule.add(a);
     }
 
@@ -67,9 +69,13 @@ public class GestoreAule {
         if(requestedFacilities == null || ts == null)
             throw new NullPointerException("Parametri NON validi!");
         Set<Aula> result = new HashSet<Aula>();
+        // In questo caso non ho bisogno di un ITERATORE poiché non devo
+        // modificare strutturalmente la collection ma solo scorrerla per
+        // confrontarla con quella passata (quindi posso usare un FOREACH)
         for(Aula a : this.aule)
             if(a.isFree(ts) && a.satisfiesFacilities(requestedFacilities))
                 result.add(a);
+        // In questo caso devo per forza guardarle tutte, quindi ho un ϴ(n) (THETA di n)
         return result;
     }
 
