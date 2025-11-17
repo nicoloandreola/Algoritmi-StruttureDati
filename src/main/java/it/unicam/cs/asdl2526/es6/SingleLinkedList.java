@@ -1,11 +1,6 @@
 package it.unicam.cs.asdl2526.es6;
 
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Lista concatenata singola che non accetta valori null, ma permette elementi
@@ -224,22 +219,16 @@ public class SingleLinkedList<E> implements List<E> {
     public boolean contains(Object o) {
         if(o == null)
             throw new NullPointerException("L'elemento da cercare NON può essere NULL!");
-        // Definisco variabile locale per scorrere tutta la lista,
-        // inizializzandola con il primo nodo
-        Node<E> current = this.head;
+        // Creo un iteratore per scorrere tutta la lista
+        Itr iterator = new Itr();
         // Cerco un elemento uguale a o finché ne esiste un successivo, cioè
-        // finché current è diverso da null (non current.next poiché se
-        // l'elemento cercato è l'ultimo non entrerei nel ciclo e ritornerei
-        // erratamente FALSE, visto che il penultimo ha current.next == NULL)
-        while(current != null)
-            if(o.equals(current.item))
+        // finché iterator.hasNext() restituisce true (GUARDIA)
+        while(iterator.hasNext()) {
+            E current = iterator.next();
+            if (o.equals(current))
                 // se lo trovo restituisco TRUE
                 return true;
-            else
-                // altrimenti passo al prossimo, assegnando a current il riferimento
-                // contenuto nel suo campo next (che punta appunto al successivo)
-                current = current.next;
-
+        }
         // se arrivo qui significa che ho scorso tutta la lista
         return false; // senza trovarlo, quindi ritorno FALSE
     }
@@ -256,19 +245,22 @@ public class SingleLinkedList<E> implements List<E> {
     public boolean add(E e) {
         if(e == null)
             throw new NullPointerException("L'elemento da aggiungere NON può essere NULL!");
-        // Creo il nodo per il nuovo elemento
+        // Creo il nodo per il nuovo elemento, passandogli come
+        // argomento per il campo next NULL, in quanto verrà inserito
+        // in fondo e quindi non avrà nessun elemento dopo di lui
         Node<E> nuovo = new Node<>(e, null);
         // se la lista è vuota significa che sto inserendo il primo elemento,
         // quindi devo aggiornare anche this.head (non devo invece aggiornare
-        // campo next in this tail perché non c'è nessun elemento dopo)
-        if(this.size == 0)
+        // campo next in this.tail perché non c'è nessun elemento dopo)
+        if(this.isEmpty())
             this.head = nuovo;
         // se invece la lista non è vuota aggiorno il riferimento dell'ultimo
-        // elemento (viceversa di prima)
+        // elemento, che ora non è più l'ultimo (viceversa di prima)
         else
             this.tail.next = nuovo;
         // Indipendentemente se la lista è vuota o meno, devo aggiornare
-        // this.tail, size e il numero di modifiche
+        // this.tail (se aggiungo, aggiungo sempre in fondo quindi l'ultimo
+        // elemento va aggiornato con il nuovo), size e il numero di modifiche
         this.tail = nuovo;
         this.size++;
         this.numeroModifiche++;
@@ -361,8 +353,10 @@ public class SingleLinkedList<E> implements List<E> {
             throw new IndexOutOfBoundsException("Indice NON valido!");
         if(element == null)
             throw new NullPointerException("L'elemento da aggiungere NON può essere NULL!");
-        // Creo un nodo per scorrere tutti gli elementi della
-        // collection e lo inizializzo con il primo (this.head)
+        // Creo un nodo per scorrere tutti gli elementi della collection e
+        // lo inizializzo con il primo (this.head). Non ho bisogno di una
+        // seconda variabile locale in cui salvare il precedente poiché non
+        // devo scollegare nulla, ma devo semplicemente aggiornare
         Node<E> current = this.head;
         // Arrivo alla posizione in cui devo inserire l'elemento (index)
         for(int i = 0; i < index; i++)
@@ -399,7 +393,7 @@ public class SingleLinkedList<E> implements List<E> {
         // Per scorrere la lista fino alla posizione desiderata, stavolta definisco 2
         // variabili locali in quanto devo tenere traccia non solo dell'elemento corrente,
         // ma anche di quello precedente poiché il nuovo elemento dovrà seguire quest'ultimo
-        // (precedente.next = element) e precedere quello corrente (element.next = current)
+        // (precedente.next = nuovo) e precedere quello corrente (nuovo.next = current)
         Node<E> current = this.head;
         Node<E> precedente = null;
         // Arrivo alla posizione desiderata (index)
@@ -410,7 +404,8 @@ public class SingleLinkedList<E> implements List<E> {
         // A questo punto current punta al nodo in posizione index: creo
         // il nuovo nodo da aggiungere, passandogli come next il riferimento
         // a quello presente ora in posizione index (cioè current), per poi
-        // shiftare tutti di una posizione a destra
+        // shiftare tutti di una posizione a destra (operazione che costa
+        // O(1), VANTAGGIO LISTA CONCATENATA)
         Node<E> nuovo = new Node<>(element, current);
         if(precedente == null)
             // Sto inserendo all'inizio della lista (basta aggiornare head)
@@ -419,7 +414,7 @@ public class SingleLinkedList<E> implements List<E> {
             // Sto inserendo in mezzo alla lista (basta aggiornare il
             // campo next del precedente inserendoci il nuovo)
             precedente.next = nuovo;
-            if (current == null)
+            if (index == this.size)
                 // Sto inserendo alla fine della lista quindi devo
                 // anche aggiornare l'ultimo elemento (tail)
                 this.tail = nuovo;
@@ -457,6 +452,8 @@ public class SingleLinkedList<E> implements List<E> {
             precedente = current;
             current = current.next;
         }
+        // Usciti dal ciclo, current punta al nodo di indice
+        // index e precedente al nodo precedente
         if(current == this.head) {
             // Sto eliminando il primo elemento della lista
             if (current.next == null) {
@@ -498,20 +495,18 @@ public class SingleLinkedList<E> implements List<E> {
         if(o == null)
             throw new NullPointerException("L'elemento da ricercare NON può essere NULL!");
         int index = 0; // contatore
-        // Creo un nodo per scorrere tutti gli elementi della
-        // collection e lo inizializzo con il primo (this.head)
-        Node<E> current = this.head;
-        // Scorro la collection fino in fondo
-        while(current != null)
-            if(o.equals(current.item))
+        // Creo un iteratore per scorrere tutti gli elementi della collection
+        Itr iterator = new Itr();
+        // Scorro la collection fino in fondo con la GUARDIA iterator.hasNext()
+        while(iterator.hasNext()) {
+            E current = iterator.next();
+            if(o.equals(current))
                 // Se trovo un elemento uguale a o, ritorno direttamente index
                 // (l'indice del nodo n è index) visto che è richiesta la prima occorrenza
                 return index;
-            else {
-                // Altrimenti incremento il contatore e passo a
-                // confrontare l'elemento successivo
+            else
+                // Altrimenti incremento il contatore
                 index++;
-                current = current.next;
             }
             // Collection terminata ed elemento non trovato
         return -1;
@@ -531,21 +526,20 @@ public class SingleLinkedList<E> implements List<E> {
     public int lastIndexOf(Object o) {
         if(o == null)
             throw new NullPointerException("L'elemento da ricercare NON può essere NULL!");
-        // variabile che aggiorno ogni volta che trovo un’occorrenza dell’oggeto
+        // variabile che aggiorno ogni volta che trovo un’occorrenza dell’oggetto
         int lastIndex = -1;
-        // Creo un nodo per scorrere tutti gli elementi della
-        // collection e lo inizializzo con il primo (this.head)
-        Node<E> current = this.head;
+        // Creo un iteratore per scorrere tutti gli elementi della collection
+        Itr iterator = new Itr();
         // poi definisco una variabile che rappresenta l'indice del nodo current
         // con cui aggiornerò la variabile che devo restituire: per farlo, non posso usare
-        // metodo indexOf poiché restituisce sempre e solo la PRIMA OCCORRENZA
+        // il metodo indexOf(o) poiché restituisce sempre e solo la PRIMA OCCORRENZA
         int index = 0;
-        while(current != null) {
-            if (o.equals(current.item))
+        while(iterator.hasNext()) {
+            E current = iterator.next();
+            if (o.equals(current))
                 lastIndex = index;
-            // Gli incrementi di current e index non li metto dentro un else poiché
-            // vanno fatti anche quando l'oggetto è uguale, altrimenti resto bloccato
-            current = current.next;
+            // L'incremento di index non lo metto dentro un else poiché
+            // va fatto anche quando l'oggetto è uguale, altrimenti resto bloccato
             index++;
         }
         return lastIndex;
@@ -562,10 +556,8 @@ public class SingleLinkedList<E> implements List<E> {
     @Override
     public Object[] toArray() {
         Object[] result = new Object[this.size];
-        int i = 0;
-        for(E e : this) {
-            result[i] = e;
-            i++;
+        for(int i = 0; i < result.length; i++) {
+            result[i] = this.get(i);
         }
         return result;
     }
