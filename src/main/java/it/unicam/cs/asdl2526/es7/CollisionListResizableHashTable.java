@@ -3,9 +3,7 @@
  */
 package it.unicam.cs.asdl2526.es7;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Realizza un insieme tramite una tabella hash con indirizzamento primario (la
@@ -15,9 +13,9 @@ import java.util.Set;
  * La tabella, poiché implementa l'interfaccia Set<E> non accetta elementi
  * duplicati (individuati tramite il metodo equals() che si assume sia
  * opportunamente ridefinito nella classe E) e non accetta elementi null.
- * 
+ *
  * La tabella ha una dimensione iniziale di default (16) e un fattore di
- * caricamento di defaut (0.75). Quando il fattore di bilanciamento effettivo
+ * caricamento di default (0.75). Quando il fattore di bilanciamento effettivo
  * eccede quello di default la tabella viene raddoppiata e viene fatto un
  * riposizionamento di tutti gli elementi.
  * 
@@ -27,7 +25,7 @@ import java.util.Set;
 public class CollisionListResizableHashTable<E> implements Set<E> {
 
     /*
-     * La capacità iniziale. E' una potenza di due e quindi la capacità sarà
+     * La capacità iniziale. È una potenza di due e quindi la capacità sarà
      * sempre una potenza di due, in quanto ogni resize raddoppia la tabella.
      */
     private static final int INITIAL_CAPACITY = 16;
@@ -75,7 +73,7 @@ public class CollisionListResizableHashTable<E> implements Set<E> {
     private Object[] table;
 
     /*
-     * Funzion di hash primaria usata da questa hash table. Va inizializzata nel
+     * Funzione di hash primaria usata da questa hash table. Va inizializzata nel
      * costruttore all'atto di creazione dell'oggetto.
      */
     private final PrimaryHashFunction phf;
@@ -92,7 +90,7 @@ public class CollisionListResizableHashTable<E> implements Set<E> {
     /* Numero di elementi della tabella corrente */
     private int getCurrentCapacity() {
         return this.table.length;
-    };
+    }
 
     /*
      * Valore corrente soglia oltre la quale si deve fare la resize,
@@ -125,19 +123,36 @@ public class CollisionListResizableHashTable<E> implements Set<E> {
 
     @Override
     public boolean contains(Object o) {
-        // TODO implementare
         /*
-         * ATTENZIONE: usare l'hashCode dell'oggetto e la funzione di hash
-         * primaria passata all'atto della creazione: il bucket in cui cercare
-         * l'oggetto o è la posizione
-         * this.phf.hash(o.hashCode(),this.getCurrentCapacity)
+         * ATTENZIONE: usare l'hashCode dell'oggetto e la funzione di hash primaria
+         * passata all'atto della creazione: il bucket in cui cercare l'oggetto
+         * o è la posizione this.phf.hash(o.hashCode(),this.getCurrentCapacity)
          * 
          * In questa posizione, se non vuota, si deve cercare l'elemento o
          * utilizzando il metodo equals() su tutti gli elementi della lista
          * concatenata lì presente
          * 
          */
-        return false;
+        if (o == null)
+            throw new IllegalArgumentException("La tabella NON contiene elementi NULLI!");
+        // Salvo la posizione in cui cercare
+        int index = this.phf.hash(o.hashCode(), this.getCurrentCapacity());
+        // Se la posizione è vuota allora significa che non c'è
+        if(this.table[index] == null)
+            return false;
+        // Altrimenti creo un iteratore per scorrere tutta la
+        // lista a cui punta la posizione index
+        Itr iterator = new Itr();
+        // Cerco un elemento uguale a o finché ne esiste un successivo, cioè
+        // finché iterator.hasNext() restituisce true (GUARDIA)
+        while(iterator.hasNext()) {
+            E current = iterator.next();
+            if (o.equals(current))
+                // se lo trovo restituisco TRUE
+                return true;
+        }
+        // se arrivo qui significa che ho scorso tutta la lista
+        return false; // senza trovarlo, quindi ritorno FALSE
     }
 
     @Override
@@ -157,7 +172,6 @@ public class CollisionListResizableHashTable<E> implements Set<E> {
 
     @Override
     public boolean add(E e) {
-        // TODO implementare
         /*
          * ATTENZIONE: usare l'hashCode dell'oggetto e la funzione di hash
          * primaria passata all'atto della creazione: il bucket in cui inserire
@@ -170,8 +184,30 @@ public class CollisionListResizableHashTable<E> implements Set<E> {
          * 
          */
         // ATTENZIONE, si inserisca prima il nuovo elemento e poi si controlli
-        // se bisogna fare resize(), cioè se this.size >
-        // this.getCurrentThreshold()
+        // se bisogna fare resize(), cioè se this.size > this.getCurrentThreshold()
+        if(e == null)
+            throw new IllegalArgumentException("La tabella NON accetta elementi NULLI!");
+        // Salvo la posizione in cui devo aggiungere l'elemento
+        int index = this.phf.hash(e.hashCode(),this.getCurrentCapacity());
+        // Se già presente devo restituire FALSE
+        if(isPresent(e))
+            return false;
+        // Altrimenti lo aggiungo e aggiorno size e modCount
+
+
+        // Controllo resize
+        if (this.size > this.getCurrentThreshold())
+            resize();
+        return true;
+    }
+
+    private boolean isPresent(E e) {
+        Iterator<E> it = this.iterator();
+        while(it.hasNext()) {
+            E current = it.next();
+            if(e.equals(current))
+                return true;
+        }
         return false;
     }
 
@@ -263,30 +299,73 @@ public class CollisionListResizableHashTable<E> implements Set<E> {
      * presente deve essere restituito dall'iteratore una e una sola volta.
      * L'iteratore deve essere fail-fast, cioè deve lanciare una eccezione
      * ConcurrentModificationException se a una chiamata di next() si "accorge"
-     * che la tabella è stata cambiata rispetto a quando l'iteratore è stato
-     * creato.
+     * che la tabella è stata cambiata rispetto a quando esso è stato creato
      */
     private class Itr implements Iterator<E> {
 
-        // TODO inserire le variabili che servono
+        private Node<E> lastReturned;
+
+        private int currentIndex;
 
         private int numeroModificheAtteso;
 
         private Itr() {
-            // TODO implementare il resto
+            // All'inizio non è ancora stato restituito niente
+            this.lastReturned = null;
+            this.currentIndex = 0;
             this.numeroModificheAtteso = modCount;
         }
 
         @Override
         public boolean hasNext() {
-            // TODO implementare
-            return false;
+            if(currentIndex == CollisionListResizableHashTable.this.table.length)
+                return false;
+            // Ricerco la prima posizione esistente non null
+            while(this.currentIndex < CollisionListResizableHashTable.this.table.length - 1
+                    && CollisionListResizableHashTable.this.table[currentIndex] == null)
+                this.currentIndex++;
+            // currentIndex punta alla prima posizione non NULL
+            if(lastReturned == null)
+                // sono all'inizio della lista di collisioni corrente
+                return true;
+            else if(lastReturned.next != null)
+                // c'è ancora almeno un elemento nella lista corrente
+                return true;
+            else {
+                // La lista corrente è terminata, quindi devo ripetere tutto
+                // per la prossima posizione della tabella NON NULLA (richiamo
+                // ricorsivamente il metodo). Prima però incremento currentIndex
+                // e riporto a NULL lastReturned in quanto inizierò una nuova lista
+                this.currentIndex++;
+                this.lastReturned = null;
+                return hasNext();
+            }
         }
 
         @Override
         public E next() {
-            // TODO implementare
-            return null;
+            if(this.numeroModificheAtteso != CollisionListResizableHashTable.this.modCount)
+                throw new ConcurrentModificationException("La lista è stata modificata durante l'iterazione");
+            if(!hasNext())
+                throw new NoSuchElementException("ELENCO TERMINATO!");
+            // C'é sicuramente un successivo da tirar fuori, e la chiamata ad
+            // hasNext avrà aggiornato currentIndex e lastReturned in modo tale
+            // che indichino esattamente il primo elemento successivo non NULLO
+            E result = null;
+            if(this.lastReturned == null) {
+                // sono all'inizio della lista corrente
+                Node<E> head = (Node<E>) CollisionListResizableHashTable.this.table[currentIndex];
+                this.lastReturned = head;
+                result = head.item;
+            }
+            else {
+                // sono nel mezzo di una lista di collisioni e lastNode.next non
+                // è null (ciò è assicurato dalla chiamata a hasNext())
+                // restituisco il prossimo elemento e mando avanti lastNode
+                result = this.lastReturned.item;
+                this.lastReturned = this.lastReturned.next;
+            }
+            return result;
         }
 
     }
