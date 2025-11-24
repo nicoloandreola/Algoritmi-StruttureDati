@@ -477,6 +477,8 @@ public class SingleLinkedList<E> implements List<E> {
         }
         this.size--;
         this.numeroModifiche++;
+        // Poiché usciti dal ciclo current punta al nodo che si vuole
+        // rimuovere, basta ritornare current.item
         return current.item;
     }
 
@@ -556,8 +558,10 @@ public class SingleLinkedList<E> implements List<E> {
     @Override
     public Object[] toArray() {
         Object[] result = new Object[this.size];
-        for(int i = 0; i < result.length; i++) {
-            result[i] = this.get(i);
+        int i = 0;
+        for(E e : this) {
+            result[i] = e;
+            i++;
         }
         return result;
     }
