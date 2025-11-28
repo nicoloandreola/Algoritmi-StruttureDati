@@ -7,15 +7,14 @@ package it.unicam.cs.asdl2526.es8;
  * Abstract Data Type Cons List, ovvero liste immutabili a contenuto generico
  * costruite a partire dalla lista vuota con inserimento in testa (operazione
  * cons). L'implementazione di default è data da due classi: EmptyList che
- * implemente la lista vuota e ConsList che implementa l'operazione cons con
+ * implementa la lista vuota e ConsList che implementa l'operazione cons con
  * campi immutabili. In questa interface sono definiti vari metodi ricorsivi
  * generici sulle ADTConsList.
  * 
  * Il nome "cons" deriva dal linguaggio LISP in cui questa è l'operazione per
  * creare una lista a partire da due campi: car (corrisponde al nostro first) e
  * cdr (corrisponde al nostro rest). A differenza dell'approccio funzionale
- * classico, questa classe realizza il tipo di dato astratto nel paradigma ad
- * oggetti.
+ * classico, questa classe realizza il tipo di dato astratto nel paradigma a oggetti.
  * 
  * @author Template: Luca Tesei, Implementazione: collettiva
  *
@@ -51,6 +50,7 @@ public interface ADTConsList<E> {
      * tolto l'elemento di testa.
      * 
      * @return la "coda" di questa lista, potrebbe essere la lista vuota
+     *
      * @throws IllegalStateException
      *                                   se il metodo viene chiamato su una
      *                                   lista vuota
@@ -62,6 +62,7 @@ public interface ADTConsList<E> {
      * 
      * @param first
      *                  l'elemento da aggiungere in testa
+     *
      * @return una lista con l'elemento {@code head} in testa e questa lista
      *         come "coda"
      */
@@ -127,8 +128,14 @@ public interface ADTConsList<E> {
      *         {@code element} sono state cancellate.
      */
     default ADTConsList<E> removeAll(E element) {
-        // TODO implementare ricorsivamente
-        return null;
+        // caso base
+        if(this.isEmpty())
+            return this;
+        // caso ricorsivo
+        if(this.first().equals(element))
+            return this.rest().removeAll(element);
+        else
+            return this.rest().removeAll(element).cons(this.first());
     }
 
     /**
@@ -145,8 +152,16 @@ public interface ADTConsList<E> {
      *         {@code newElement}
      */
     default ADTConsList<E> updateFirst(E element, E newElement) {
-        // TODO implementare ricorsivamente
-        return null;
+        // caso base
+        if(this.isEmpty())
+            return this;
+        // caso ricorsivo
+        if(this.first().equals(element))
+            // restituisco la lista formata dalla coda di questa a cui
+            // aggiungo il nuovo elemento (come se l'avessi sostituito)
+            return this.rest().cons(newElement);
+        else
+            return this.rest().updateFirst(element, newElement).cons(this.first());
     }
 
     /**
@@ -163,8 +178,14 @@ public interface ADTConsList<E> {
      *         {@code newElement}
      */
     default ADTConsList<E> updateAll(E element, E newElement) {
-        // TODO implementare ricorsivamente
-        return null;
+        // caso base
+        if(this.isEmpty())
+            return this;
+        // caso ricorsivo
+        if(this.first().equals(element))
+            return this.rest().updateAll(element, newElement).cons(newElement);
+        else
+            return this.rest().updateAll(element, newElement).cons(this.first());
     }
 
     /**
@@ -176,8 +197,14 @@ public interface ADTConsList<E> {
      *         elementi di {@code list}.
      */
     default ADTConsList<E> append(ADTConsList<E> list) {
-        // TODO implementare ricorsivamente
-        return null;
+        // Se la lista passata è vuota basta restituire questa lista
+        if(list.isEmpty())
+            return this;
+        // caso base (viceversa di prima)
+        if(this.isEmpty())
+            return list;
+        // caso ricorsivo
+        return this.rest().append(list).cons(this.first());
     }
 
     /**
@@ -189,8 +216,11 @@ public interface ADTConsList<E> {
      */
     @SuppressWarnings("unchecked")
     default ADTConsList<E> reverse() {
-        // TODO implementare ricorsivamente
-        return null;
+        // caso base
+        if(this.isEmpty())
+            return this;
+        // caso ricorsivo
+        return this.rest().reverse().append(new ConsList<>(this.first()));
     }
 
 }
