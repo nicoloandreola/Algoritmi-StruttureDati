@@ -442,8 +442,30 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * @return la lunghezza del massimo cammino da questo nodo a una foglia.
          */
         protected int computeHeight() {
-            // TODO implementare ricorsivamente
-            return -1;
+            // Definisco 2 variabili locali in cui salvo le altezze dei
+            // 2 sotto-alberi, per poi restituire quella maggiore
+            int heightLeft = 0;
+            int heightRight = 0;
+            // Caso base
+            if(this.left == null && this.right == null)
+                return 0;
+            // Caso ricorsivo
+            if(this.left == null) {
+                // ho solo il sotto albero destro
+                heightLeft = -1;
+                heightRight = this.right.computeHeight();
+            }
+            else if(this.right == null) {
+                // ho solo il sotto albero sinistro
+                heightRight = -1;
+                heightLeft = this.left.computeHeight();
+            }
+            else {
+                // ho entrambi i sotto alberi
+                heightRight = this.right.computeHeight();
+                heightLeft = this.left.computeHeight();
+            }
+            return Math.max(heightLeft, heightRight) + 1;
         }
 
         /*
@@ -456,8 +478,37 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * l'etichetta era già presente.
          */
         protected boolean insert(E label) {
-            // TODO implementare ricorsivamente
-            return false;
+            // Vedo se il valore passato è maggiore o minore o
+            // uguale di quello della radice (this)
+            int cmp = label.compareTo(this.label);
+            // Se sono uguali, significa che l'elemento è gia presente
+            // e quindi devo restituire FALSE senza fare niente (questo
+            // albero non accetta DUPLICATI)
+            if(cmp == 0)
+                return false;
+
+            else if (cmp < 0)
+                // l'elemento va inserito nel sotto albero sinistro
+                if(this.left == null) {
+                    // caso base
+                    this.left = new RecBST(label);
+                    this.left.parent = this;
+                    return true;
+                }
+                else
+                    // caso ricorsivo
+                    return this.left.insert(label);
+            else
+                // l'elemento va inserito nel sotto albero destro
+                if(this.right == null) {
+                    // caso base
+                    this.right = new RecBST(label);
+                    this.right.parent = this;
+                    return true;
+                }
+                else
+                    // caso ricorsivo
+                    return this.right.insert(label);
         }
 
         /*
@@ -469,8 +520,35 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * null se l'etichetta non è presente
          */
         protected RecBST search(E label) {
-            // TODO implementare ricorsivamente
-            return null;
+            // Caso base
+            if(this.left == null && this.right == null)
+                if(this.label.equals(label))
+                    return this;
+                else
+                    return null;
+            // Caso ricorsivo
+            int cmp = label.compareTo(this.label);
+            // Vedo se il valore passato è maggiore o minore o
+            // uguale di quello della radice (this)
+            if(cmp == 0)
+                return this;
+
+            else if(cmp < 0)
+                // Cerco nel sotto-albero sinistro
+                if(this.left == null)
+                    // Caso base
+                    return null;
+                else
+                    // Caso ricorsivo
+                    return this.left.search(label);
+
+            else
+                // Cerco nel sotto-albero destro (cmp > 0)
+                if(this.right == null)
+                    // Caso base
+                    return null;
+                else
+                    return this.right.search(label);
         }
 
         /*
