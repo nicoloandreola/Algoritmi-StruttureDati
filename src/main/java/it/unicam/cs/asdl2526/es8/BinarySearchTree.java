@@ -444,20 +444,20 @@ public class BinarySearchTree<E extends Comparable<E>> {
         protected int computeHeight() {
             // Definisco 2 variabili locali in cui salvo le altezze dei
             // 2 sotto-alberi, per poi restituire quella maggiore
-            int heightLeft = 0;
-            int heightRight = 0;
+            int heightLeft = -1;
+            int heightRight = -1;
             // Caso base
             if(this.left == null && this.right == null)
+                // Se l'albero è una foglia, il metodo deve restituire
+                // 0 in quanto la sua altezza è 0 (log1 = 0)
                 return 0;
             // Caso ricorsivo
             if(this.left == null) {
                 // ho solo il sotto albero destro
-                heightLeft = -1;
                 heightRight = this.right.computeHeight();
             }
             else if(this.right == null) {
                 // ho solo il sotto albero sinistro
-                heightRight = -1;
                 heightLeft = this.left.computeHeight();
             }
             else {
@@ -498,7 +498,7 @@ public class BinarySearchTree<E extends Comparable<E>> {
                 else
                     // caso ricorsivo
                     return this.left.insert(label);
-            else
+            else // (cmp > 0)
                 // l'elemento va inserito nel sotto albero destro
                 if(this.right == null) {
                     // caso base
@@ -560,7 +560,22 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * etichette in ordine
          */
         protected void addLabelsInOrder(List<E> l) {
-            // TODO implementare ricorsivamente
+            // Prima di tutto visito il sotto albero sinistro, se esiste
+            // e in tal caso richiamo il metodo: in questo modo arrivo
+            // prima al nodo più a sinistra e aggiungo tutte le etichette del
+            // sotto albero sinistro, poi, solo dopo aggiungo quella di this
+            if(this.left != null)
+                this.left.addLabelsInOrder(l);
+            // Quando non esiste più un sotto albero sinistro aggiungo
+            // alla lista l'etichetta del nodo in cui sono arrivato
+            // (cioè il primo che non ha figlio sinistro)
+            l.add(this.label);
+            // Prima di tornare al suo parent (cioè passare alla chiamata
+            // ricorsiva precedente) devo controllare se ha un figlio destro
+            // e in tal caso richiamare il metodo per ripetere il procedimento
+            // e aggiungere tutte le etichette del sotto albero destro
+            if(this.right != null)
+                this.right.addLabelsInOrder(l);
         }
 
         /*
@@ -572,8 +587,9 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * (sotto-)albero secondo l'ordinamento naturale della classe {@code E}
          */
         protected List<E> inOrderVisit() {
-            // TODO implementare ricorsivamente
-            return null;
+            List<E> result = new ArrayList<>();
+            this.addLabelsInOrder(result);
+            return result;
         }
 
         /*
@@ -584,8 +600,11 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * questo (sotto-)albero
          */
         protected RecBST getMinNode() {
-            // TODO implementare ricorsivamente
-            return null;
+            // caso base
+            if(this.left == null)
+                return this;
+            // caso ricorsivo
+            return this.left.getMinNode();
         }
 
         /*
@@ -596,8 +615,11 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * questo (sotto-)albero
          */
         protected RecBST getMaxNode() {
-            // TODO implementare ricorsivamente
-            return null;
+            // caso base
+            if(this.right == null)
+                return this;
+            // caso ricorsivo
+            return this.right.getMaxNode();
         }
 
         /*
@@ -609,8 +631,25 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * non ha successore
          */
         protected RecBST getSuccessorNode() {
-            // TODO implementare
-            return null;
+            // Caso in cui questo nodo ha un sotto albero destro
+            if(this.right != null)
+                return this.right.getMinNode();
+            // Caso in cui questo nodo NON ha un sotto albero destro
+            // (devo risalire fino al primo nodo che ha un figlio
+            // sinistro, il quale è tra gli antenati di questo nodo,
+            // cioè finché this è figlio destro del suo parent)
+            RecBST current = this;
+            RecBST parent = this.parent;
+            while(parent != null && current == parent.right) {
+                current = parent;
+                parent = parent.parent;
+            }
+            // Quando il ciclo finisce PARENT é il primo antenato
+            // più grande di this (il successore) oppure è uguale
+            // a NULL (quando si esce perché la prima condizione e
+            // non la seconda è diventata FALSA): in questo caso
+            // significa che this era il massimo e non ha successore
+            return parent;
         }
 
         /*
@@ -622,18 +661,81 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * non ha predecessore
          */
         protected RecBST getPredecessorNode() {
-            // TODO implementare
-            return null;
+            // Caso in cui questo nodo ha un sotto albero sinistro
+            if(this.left != null)
+                return this.right.getMaxNode();
+            // Caso in cui questo nodo NON ha un sotto albero sinistro
+            // (devo risalire fino al primo nodo che ha un figlio
+            // destro, il quale è tra gli antenati di questo nodo,
+            // cioè finché this è figlio sinistro del suo parent)
+            RecBST current = this;
+            RecBST parent = this.parent;
+            while(parent != null && current == parent.left) {
+                current = parent;
+                parent = parent.parent;
+            }
+            // Quando il ciclo finisce PARENT é il primo antenato
+            // più piccolo di this (il predecessore) oppure è uguale
+            // a NULL (quando si esce perché la prima condizione e
+            // non la seconda è diventata FALSA): in questo caso
+            // significa che this era il minimo e non ha predecessore
+            return parent;
         }
 
         /*
          * Cancella l'etichetta di questo nodo dall'albero. Potrebbe non
          * eliminare proprio questo nodo, ma un'altro nodo, copiando l'etichetta
-         * di quel nodo cancellato (scollegandolo dal parent) in questo nodo.
-         * Cfr. slides di teoria.
+         * di quel nodo cancellato (scollegandolo dal parent) in questo nodo (si
+         * tratta del caso in cui nodo da eliminare ha 2 figli: Cfr. slides di teoria.)
          */
         protected void deleteSelfLabel() {
-            // TODO implementare
+            // Caso in cui è una foglia
+            if(this.left == null && this.right == null) {
+                if (this.parent == null)
+                    // Il nodo da cancellare è la RADICE
+                    BinarySearchTree.this.root = null;
+                else if (this.parent.left == null)
+                    // La foglia è un sotto albero destro
+                    this.parent.right = null;
+                else
+                    // La foglia è un sotto albero sinistro
+                    this.parent.left = null;
+            }
+
+            // Caso in cui ha 1 solo figlio
+            else if(this.left == null || this.right == null) {
+                RecBST child = (this.left == null) ? this.right : this.left;
+                if (this.parent == null) {
+                    // Il nodo da cancellare è la RADICE
+                    BinarySearchTree.this.root = child;
+                    child.parent = null;
+                } else if (this.parent.left == this) {
+                    // Il nodo da cancellare sta a SX del padre
+                    // quindi il figlio va collegato a sinistra
+                    this.parent.left = child;
+                    child.parent = this.parent;
+                } else { // (this.parent.right == this)
+                    // Il nodo da cancellare sta a DX del padre
+                    // quindi il figlio va collegato a destra
+                    this.parent.right = child;
+                    child.parent = this.parent;
+                }
+            }
+
+            // Caso in cui ha 2 figli: devo trovare il successore
+            else {
+                RecBST successor = this.getSuccessorNode();
+                // Sostituisco l'etichetta del nodo da eliminare con
+                // quella del suo successore ed elimino quest'ultimo
+                // (cioè chiamo ricorsivamente il metodo): se successor
+                // avrà a sua volta 2 figli arriverò nuovamente
+                // a questo punto come previsto (non mi fermo a uno
+                // dei "2 casi basi precedenti" in quanto le condizioni
+                // non sono soddisfatte) e ripeterò il procedimento, finché
+                // appunto non trovo un successore con al più 1 figlio
+                this.label = successor.label;
+                successor.deleteSelfLabel();
+            }
         }
     }
 }
