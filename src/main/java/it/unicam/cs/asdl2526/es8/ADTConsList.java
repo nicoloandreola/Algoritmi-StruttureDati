@@ -133,8 +133,12 @@ public interface ADTConsList<E> {
             return this;
         // caso ricorsivo
         if(this.first().equals(element))
+            // Se il primo elemento di questa lista è uguale a quello
+            // da rimuovere non lo ri-aggiungo all'inizio della lista
             return this.rest().removeAll(element);
         else
+            // Altrimenti non deve essere cancellato quindi lo devo
+            // rimettere in testa alla lista tramite il metodo CONS
             return this.rest().removeAll(element).cons(this.first());
     }
 
@@ -157,10 +161,12 @@ public interface ADTConsList<E> {
             return this;
         // caso ricorsivo
         if(this.first().equals(element))
-            // restituisco la lista formata dalla coda di questa a cui
-            // aggiungo il nuovo elemento (come se l'avessi sostituito)
+            // Restituisco la lista formata dalla coda di questa, a cui
+            // aggiungo il nuovo elemento (come se avessi sostituito first)
             return this.rest().cons(newElement);
         else
+            // Se invece il primo elemento di questa lista non è da sostituire,
+            // devo richiamare il metodo su this.rest ri-aggiungendolo sempre in testa
             return this.rest().updateFirst(element, newElement).cons(this.first());
     }
 
@@ -183,6 +189,8 @@ public interface ADTConsList<E> {
             return this;
         // caso ricorsivo
         if(this.first().equals(element))
+            // Richiamo il metodo anche se l'elemento è uguale a quello da
+            // aggiornare visto che non devo cambiare solo la prima occorrenza
             return this.rest().updateAll(element, newElement).cons(newElement);
         else
             return this.rest().updateAll(element, newElement).cons(this.first());
@@ -198,6 +206,7 @@ public interface ADTConsList<E> {
      */
     default ADTConsList<E> append(ADTConsList<E> list) {
         // Se la lista passata è vuota basta restituire questa lista
+        // (caso particolare, non strettamente necessario)
         if(list.isEmpty())
             return this;
         // caso base (viceversa di prima)
