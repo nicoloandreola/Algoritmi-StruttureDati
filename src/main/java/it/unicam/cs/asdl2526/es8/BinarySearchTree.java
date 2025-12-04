@@ -689,53 +689,51 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * tratta del caso in cui nodo da eliminare ha 2 figli: Cfr. slides di teoria.)
          */
         protected void deleteSelfLabel() {
-            // Caso in cui è una foglia
-            if(this.left == null && this.right == null) {
-                if (this.parent == null)
-                    // Il nodo da cancellare è la RADICE
-                    BinarySearchTree.this.root = null;
-                else if (this.parent.left == null)
-                    // La foglia è un sotto albero destro
-                    this.parent.right = null;
-                else
-                    // La foglia è un sotto albero sinistro
-                    this.parent.left = null;
-            }
+            // Variabile in cui salvo il nodo effettivo da eliminare
+            RecBST nodeToRemove;
+            // Determino il nodo effettivo da eliminare
+            if (this.left == null || this.right == null)
+                // il nodo da eliminare ha AL PIU' un figlio
+                nodeToRemove = this;
+            else
+                // il nodo da eliminare ha 2 figli, quindi ha
+                // un successore (caso in cui non elimino proprio
+                // questo nodo, ma un altro nodo, copiando l'etichetta
+                // di quel nodo cancellato (scollegandolo dal parent)
+                // in questo nodo
+                nodeToRemove = this.getSuccessorNode();
 
-            // Caso in cui ha 1 solo figlio
-            else if(this.left == null || this.right == null) {
-                RecBST child = (this.left == null) ? this.right : this.left;
-                if (this.parent == null) {
-                    // Il nodo da cancellare è la RADICE
-                    BinarySearchTree.this.root = child;
-                    child.parent = null;
-                } else if (this.parent.left == this) {
-                    // Il nodo da cancellare sta a SX del padre
-                    // quindi il figlio va collegato a sinistra
-                    this.parent.left = child;
-                    child.parent = this.parent;
-                } else { // (this.parent.right == this)
-                    // Il nodo da cancellare sta a DX del padre
-                    // quindi il figlio va collegato a destra
-                    this.parent.right = child;
-                    child.parent = this.parent;
-                }
-            }
+            // Determino il figlio non null più a sinistra del nodo
+            // da eliminare (se esiste, altrimenti è null)
+            RecBST mostLeftNonNullChild;
+            if(nodeToRemove.left != null)
+                mostLeftNonNullChild = nodeToRemove.left;
+            else
+                mostLeftNonNullChild = nodeToRemove.right;
 
-            // Caso in cui ha 2 figli: devo trovare il successore
-            else {
-                RecBST successor = this.getSuccessorNode();
-                // Sostituisco l'etichetta del nodo da eliminare con
-                // quella del suo successore ed elimino quest'ultimo
-                // (cioè chiamo ricorsivamente il metodo): se successor
-                // avrà a sua volta 2 figli arriverò nuovamente
-                // a questo punto come previsto (non mi fermo a uno
-                // dei "2 casi basi precedenti" in quanto le condizioni
-                // non sono soddisfatte) e ripeterò il procedimento, finché
-                // appunto non trovo un successore con al più 1 figlio
-                this.label = successor.label;
-                successor.deleteSelfLabel();
+            // Collego il parent del figlio non null (se esiste)
+            // con il parent del nodo da cancellare
+            if(mostLeftNonNullChild != null)
+                mostLeftNonNullChild.parent = nodeToRemove.parent;
+
+            // Ora non resta che controllare se si sta eliminando
+            // la radice dell'albero della classe principale
+            if(nodeToRemove.parent == null)
+                BinarySearchTree.this.root = mostLeftNonNullChild;
+            // Altrimenti capiamo se era un figlio sinistro o destro
+            else if(nodeToRemove.parent.left == nodeToRemove)
+                // era un figlio sinistro, perciò collego il nuovo figlio
+                // (mostLeftNonNullChild) a sinistra
+                nodeToRemove.parent.left = mostLeftNonNullChild;
+            else
+                // era un figlio destro, perciò lo collego a destra
+                nodeToRemove.parent.right = mostLeftNonNullChild;
+
+            // Infine, se il nodo che ho cancellato non è effettivamente 
+            // questo allora copio qui l'etichetta del nodo cancellato
+            if(nodeToRemove != this)
+                this.label = nodeToRemove.label;
+
             }
-        }
     }
 }
