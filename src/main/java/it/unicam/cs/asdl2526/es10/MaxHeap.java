@@ -57,9 +57,10 @@ public class MaxHeap<E extends Comparable<E>> {
     public MaxHeap(List<E> list) {
         if(list == null)
             throw new NullPointerException("La LISTA di partenza NON può essere NULLA");
+        this.heap = new ArrayList<>(list);
         // Determino la posizione del primo nodo che non è
         // una foglia che ha almeno un figlio
-        int index = (this.size() + 1) / 2;
+        int index = (this.size() / 2) - 1;
         // Chiamo heapify su tutti i nodi a partire da quello appena
         // determinato fino ad arrivare alla radice (decremento
         // e non incremento di uno l'indice a ogni iterazione)
@@ -106,7 +107,7 @@ public class MaxHeap<E extends Comparable<E>> {
      * la radice dello heap.
      */
     private int leftIndex(int i) {
-        return i * 2 + 2;
+        return i * 2 + 1;
     }
 
     /*
@@ -175,13 +176,15 @@ public class MaxHeap<E extends Comparable<E>> {
         int right = this.rightIndex(i);
         // Inizializzo la variabile MAX con i
         int max = i;
-        if(left <= this.size() && this.heap.get(left).compareTo(this.heap.get(max)) > 0)
-            // Se il figlio sx esiste ed è maggiore di max (cioè di i),
-            // aggiorno la variabile max con l'indice del figlio sx
+        if(left < this.size() && this.heap.get(left).compareTo(this.heap.get(max)) > 0)
+            // Se il figlio sx esiste (cioè se il suo indice é minore
+            // della size) ed è maggiore di max (cioè di i), aggiorno
+            // la variabile max con l'indice del figlio sinistro
             max = left;
-        if(right <= this.size() && this.heap.get(right).compareTo(this.heap.get(max)) > 0)
-            // Se il figlio dx esiste ed è maggiore del valore attuale
-            // contenuto in max (i o left), aggiorno quest'ultima con right
+        if(right < this.size() && this.heap.get(right).compareTo(this.heap.get(max)) > 0)
+            // Se il figlio dx esiste (cioè se il suo indice è minore
+            // della size) ed è maggiore del valore attuale contenuto
+            // in max (i o left), aggiorno quest'ultima con l'indice right
             max = right;
         // Se il massimo tra i 3 non è il nodo i devo scambiare i con max
         // e richiamare il metodo ricorsivamente sull'indice del nodo figlio
