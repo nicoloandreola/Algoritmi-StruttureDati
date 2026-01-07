@@ -69,7 +69,17 @@ public class LCSSolver {
         // Se è stato gia risolto, non devo far nulla
         if(this.isSolved)
             return;
+
+        // Inizializzo con tutti zeri la prima riga e la prima
+        // colonna (posso anche non farlo visto che java inizializza
+        // tutte le caselle a zero di default)
+        for(int i = 0; i <= this.x.length(); i++)
+            this.m[i][0] = 0;
+        for(int j = 0; j <= this.y.length(); j++)
+            this.m[0][j] = 0;
+
         // m.length sarebbe x.length() + 1, cioè il numero di righe
+        // (potevo anche usare <= x.length() e <= y.length() come sopra)
         for(int i = 1; i < this.m.length; i++) {
             // m[i].length è invece la lunghezza di una riga,
             // cioè il numero di colonne (y.length() + 1)
