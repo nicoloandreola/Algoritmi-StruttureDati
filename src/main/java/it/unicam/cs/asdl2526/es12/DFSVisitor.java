@@ -28,10 +28,27 @@ public class DFSVisitor<L> {
      *                                  se il grafo passato è null
      */
     public void DFSVisit(Graph<L> g) {
-        // TODO implementare
-        // NOTA: inizializza il grafo e chiama la recDFS sui nodi in un ordine
-        // qualsiasi per calcolare la "foresta" DFS
+        // NOTA: inizializza il grafo e chiama la recDFS sui nodi in
+        // un ordine qualsiasi per calcolare la "foresta" DFS
 
+        if (g == null)
+            throw new NullPointerException("Grafo NON può essere NULLO!");
+        // Inizializzo i nodi del grafo
+        for (GraphNode<L> n : g.getNodes()) {
+            n.setColor(GraphNode.COLOR_WHITE);
+            n.setPrevious(null);
+            n.setEnteringTime(-1);
+            n.setExitingTime(-1);
+        }
+        // Inizializzo il tempo globale
+        this.time = 0;
+        // Ciclo esterno
+        for (GraphNode<L> n : g.getNodes()) {
+            if (n.getColor() == GraphNode.COLOR_WHITE)
+                // Chiamo la DFS ricorsiva su n
+                recDFS(g, n);
+        }
+        // Fine della visita DFS "esterna"
     }
 
     /*
@@ -42,8 +59,28 @@ public class DFSVisitor<L> {
      * @param u il nodo su cui parte la DFS
      */
     protected void recDFS(Graph<L> g, GraphNode<L> u) {
-        // TODO implementare ricorsivamente
         // NOTA: chiamare il metodo visitNode alla "scoperta" di un nuovo nodo
+
+        // Scopro il nodo u
+        u.setColor(GraphNode.COLOR_GREY);
+        // Incremento il tempo globale
+        this.time++;
+        // Assegno ad n il tempo di scoperta
+        u.setEnteringTime(this.time);
+        for (GraphNode<L> v : g.getAdjacentNodesOf(u)) {
+            if (v.getColor() == GraphNode.COLOR_WHITE) {
+                // Assegno il puntatore per l'albero di copertura
+                v.setPrevious(u);
+                // Vado in profondità
+                recDFS(g, v);
+            }
+        }
+        // Tutti i nodi adiacenti a u sono diventati neri
+        // u diventa nero e assegno a u il tempo di uscita
+        u.setColor(GraphNode.COLOR_BLACK);
+        this.time++;
+        u.setExitingTime(this.time);
+        visitNode(u);
     }
 
     /**

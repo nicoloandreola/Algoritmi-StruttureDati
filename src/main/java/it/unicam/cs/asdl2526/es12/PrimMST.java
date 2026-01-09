@@ -56,7 +56,64 @@ public class PrimMST<L> {
      *        con pesi negativi
      */
     public void computeMSP(Graph<L> g, GraphNode<L> s) {
-        // TODO implementare
-    }
+            if (g == null || s == null)
+                throw new NullPointerException("GRAFO e SORGENTE NON possono essere NULLI!");
+
+            if (!g.getNodes().contains(s))
+                throw new IllegalArgumentException("Nodo sorgente non presente nel grafo!");
+
+            if (g.isDirected())
+                throw new IllegalArgumentException("Il grafo NON può essere ORIENTATO!");
+
+        // Controllo grafo pesato e pesi non negativi
+        for (GraphNode<L> n : g.getNodes()) {
+            for (GraphEdge<L> e : g.getEdgesOf(n)) {
+                if (!e.hasWeight())
+                    throw new IllegalArgumentException("Tutti gli ARCHI devono essere PESATI!");
+                if (e.getWeight() < 0)
+                    throw new IllegalArgumentException("Un ARCO NON può avere PESO NEGATIVO!");
+            }
+        }
+
+            // Inizializzazione
+            this.queue.clear();
+            for (GraphNode<L> n : g.getNodes()) {
+                n.setPrevious(null);
+                n.setFloatingPointDistance(Double.POSITIVE_INFINITY);
+                n.setColor(GraphNode.COLOR_WHITE);
+                this.queue.add(n);
+            }
+
+            // Nodo sorgente
+            s.setFloatingPointDistance(0.0);
+
+            // Algoritmo di Prim
+            while (!queue.isEmpty()) {
+                // Estrazione del minimo (scansione lineare)
+                GraphNode<L> u = queue.get(0);
+                double min = Double.POSITIVE_INFINITY;
+
+                for (GraphNode<L> n : queue) {
+                    if (n.getFloatingPointDistance() < min) {
+                        min = n.getFloatingPointDistance();
+                        u = n;
+                    }
+                }
+
+                queue.remove(u);
+                u.setColor(GraphNode.COLOR_BLACK);
+
+                // Rilassamento degli archi incidenti
+                for (GraphEdge<L> e : g.getEdgesOf(u)) {
+                    GraphNode<L> v =
+                            e.getNode1().equals(u) ? e.getNode2() : e.getNode1();
+
+                    if (queue.contains(v) && e.getWeight() < v.getFloatingPointDistance()) {
+                        v.setFloatingPointDistance(e.getWeight());
+                        v.setPrevious(u);
+                    }
+                }
+            }
+        }
 
 }

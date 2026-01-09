@@ -1,5 +1,7 @@
 package it.unicam.cs.asdl2526.es12;
 
+import java.util.LinkedList;
+
 /**
  * Classe singoletto che fornisce lo schema generico di visita Breadth-First di
  * un grafo rappresentato da un oggetto di tipo Graph<L>.
@@ -32,8 +34,47 @@ public class BFSVisitor<L> {
      *                                      al grafo dato
      */
     public void BFSVisit(Graph<L> g, GraphNode<L> source) {
-        // TODO implementare
         // NOTA: chiamare il metodo visitNode quando un nodo passa da grigio a nero
+        if (g == null)
+            throw new NullPointerException("Grafo NON può essere NULLO!");
+        if (source == null)
+            throw new NullPointerException("Sorgente NON può essere NULLA!");
+        if (!g.getNodes().contains(source))
+            throw new IllegalArgumentException("La sorgente NON è un nodo del grafo!");
+
+        // Inizializzo il grafo
+        for (GraphNode<L> n : g.getNodes()) {
+            n.setColor(GraphNode.COLOR_WHITE);
+            n.setIntegerDistance(-1);
+            n.setPrevious(null);
+        }
+        // Scopro la sorgente
+        source.setColor(GraphNode.COLOR_GREY);
+        source.setIntegerDistance(0);
+        source.setPrevious(null);
+        // Come coda utilizzo una LinkedList: uso addLast per inserire in coda e
+        // removeFirst per estrarre il primo elemento
+        LinkedList<GraphNode<L>> queue = new LinkedList<GraphNode<L>>();
+        // Inserisco in coda la sorgente
+        queue.addLast(source);
+        // Ciclo Principale
+        while (!queue.isEmpty()) {
+            GraphNode<L> nodoCorrente = queue.removeFirst();
+            for (GraphNode<L> n : g.getAdjacentNodesOf(nodoCorrente)) {
+                // Scopro tutti i nodi bianchi adiacenti al nodo corrente
+                if (n.getColor() == GraphNode.COLOR_WHITE) {
+                    // Faccio tutte le operazioni relative alla scoperta
+                    n.setColor(GraphNode.COLOR_GREY);
+                    n.setIntegerDistance(nodoCorrente.getIntegerDistance() + 1);
+                    n.setPrevious(nodoCorrente);
+                    queue.addLast(n);
+                }
+            }
+            // Il nodo corrente diventa nero
+            nodoCorrente.setColor(GraphNode.COLOR_BLACK);
+            this.visitNode(nodoCorrente);
+        }
+        // la visita è finita
     }
 
     /**
