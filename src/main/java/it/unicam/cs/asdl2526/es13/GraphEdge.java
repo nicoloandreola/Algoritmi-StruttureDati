@@ -163,13 +163,20 @@ public class GraphEdge<L> {
      */
     @Override
     public int hashCode() {
+        // Modificata l'implementazione standard per rispettare la proprietà
+        // dell'hashCode anche nel caso di archi non orientati con ordine diverso
         final int prime = 31;
         int result = 1;
+        // Necessario altrimenti potrei avere A → B e (A, B) con stesso hashcode
+        // ma equals == false (cioè un arco orientato uguale a uno non orientato)
         result = prime * result + (directed ? 1231 : 1237);
-        // Modificata l'implementazione standard per rispettare la proprietà
-        // dell'hashCode anche nel caso di archi non orientati con ordine
-        // diverso
-        result = prime * result + (node1.hashCode() + node2.hashCode());
+        // CASO ORIENTATO (A → B ≠ B → A, quindi deve ritornare FALSE)
+        if(result == 1262) {
+            result = prime * result + node1.hashCode();
+            result = prime * result + node2.hashCode();
+        }
+        else // CASO NON ORIENTATO ((A, B) == (B, A), quindi deve ritornare TRUE)
+            result = prime * result + (node1.hashCode() + node2.hashCode());
         return result;
     }
 
