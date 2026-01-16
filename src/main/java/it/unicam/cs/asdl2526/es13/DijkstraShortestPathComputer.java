@@ -1,6 +1,7 @@
 package it.unicam.cs.asdl2526.es13;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,14 +55,79 @@ public class DijkstraShortestPathComputer<L>
      *                                      un peso negativo
      */
     public DijkstraShortestPathComputer(Graph<L> graph) {
-        // TODO implementare
+        if (graph == null)
+            throw new NullPointerException("Il grafo non può essere null");
+        if (graph.nodeCount() == 0)
+            throw new IllegalArgumentException("Il grafo non può essere vuoto");
+        if (!graph.isDirected())
+            throw new IllegalArgumentException("Il grafo deve essere orientato");
+
+        // Controllo pesi
+        for (GraphEdge<L> e : graph.getEdges()) {
+            if (Double.isNaN(e.getWeight()))
+                throw new IllegalArgumentException("Il grafo non è pesato");
+            if (e.getWeight() < 0)
+                throw new IllegalArgumentException("Peso negativo non ammesso");
+        }
         this.graph = graph;
         this.queue = new ArrayList<GraphNode<L>>();
     }
 
     @Override
     public void computeShortestPathsFrom(GraphNode<L> sourceNode) {
-        // TODO implementare
+        if (sourceNode == null)
+            throw new NullPointerException("Nodo sorgente null");
+        if (!graph.getNodes().contains(sourceNode))
+            throw new IllegalArgumentException("Nodo sorgente non nel grafo");
+
+        // Inizializzazione
+        for (GraphNode<L> node : graph.getNodes()) {
+            node.setFloatingPointDistance(Double.POSITIVE_INFINITY);
+            node.setPrevious(null);
+            node.setColor(GraphNode.COLOR_WHITE);
+        }
+
+        sourceNode.setFloatingPointDistance(0.0);
+
+        queue.clear();
+        queue.addAll(graph.getNodes());
+
+        // Algoritmo di Dijkstra
+        while (!queue.isEmpty()) {
+            GraphNode<L> u = extractMin();
+            u.setColor(GraphNode.COLOR_BLACK);
+
+            for (GraphEdge<L> edge : graph.getEdgesOf(u)) {
+                GraphNode<L> v = edge.getNode2();
+                if (v.getColor() == GraphNode.COLOR_BLACK)
+                    continue;
+
+                double alt = u.getFloatingPointDistance() + edge.getWeight();
+                if (alt < v.getFloatingPointDistance()) {
+                    v.setFloatingPointDistance(alt);
+                    v.setPrevious(u);
+                }
+            }
+        }
+
+        this.lastSource = sourceNode;
+        this.isComputed = true;
+    }
+
+    // Estrae il nodo con distanza minima
+    private GraphNode<L> extractMin() {
+        GraphNode<L> min = null;
+        double minDist = Double.POSITIVE_INFINITY;
+
+        for (GraphNode<L> n : queue) {
+            if (n.getFloatingPointDistance() < minDist) {
+                minDist = n.getFloatingPointDistance();
+                min = n;
+            }
+        }
+
+        queue.remove(min);
+        return min;
     }
 
     @Override
@@ -71,7 +137,8 @@ public class DijkstraShortestPathComputer<L>
 
     @Override
     public GraphNode<L> getLastSource() {
-        // TODO implementare
+        if (!isComputed)
+            throw new IllegalStateException("Calcolo non ancora effettuato");
         return this.lastSource;
     }
 
@@ -82,8 +149,33 @@ public class DijkstraShortestPathComputer<L>
 
     @Override
     public List<GraphEdge<L>> getShortestPathTo(GraphNode<L> targetNode) {
-        // TODO implementare
-        return null;
+        if (targetNode == null)
+            throw new NullPointerException("Nodo target null");
+        if (!graph.getNodes().contains(targetNode))
+            throw new IllegalArgumentException("Nodo target non nel grafo");
+        if (!isComputed)
+            throw new IllegalStateException("Calcolo non ancora effettuato");
+
+        // Nodo non raggiungibile
+        if (targetNode.getFloatingPointDistance() == Double.POSITIVE_INFINITY)
+            return null;
+
+        // Caso sorgente = target
+        if (targetNode.equals(lastSource))
+            return new ArrayList<>();
+
+        List<GraphEdge<L>> path = new ArrayList<>();
+        GraphNode<L> current = targetNode;
+
+        while (!current.equals(lastSource)) {
+            GraphNode<L> prev = current.getPrevious();
+            GraphEdge<L> edge = graph.getEdge(prev, current);
+            path.add(edge);
+            current = prev;
+        }
+
+        Collections.reverse(path);
+        return path;
     }
 
     /*
